@@ -36,42 +36,46 @@ int main()
     FILE *log_file = fopen(LOG_FILE, "w");
     fclose(log_file);
 
-    pid_t pid = fork();
+    // Se crea el primer hijo
+    pid_t pid_1 = fork();
 
-    if (pid == -1)
+    // En el caso que haya un error durante el fork
+    if (pid_1 == -1)
     {
         perror("fork");
         exit(1);
     }
-    else if (pid)
+    // Ejecucion del hijo
+    else if (pid_1 == 0)
     {
-        // Proceso padre
-        printf("Soy el proceso padre - %d\n", pid);
-        printf("Mi PID es: %d\n\n", getpid());
-
-        int status;
-        wait(&status);
-
-        if (WIFEXITED(status))
-        {
-            printf("\nEl proceso hijo termino con estado: %d\n", status);
-        }
-        else
-        {
-            printf("\nError: El proceso hijo termino con estado: %d\n", status);
-        }
-
-        printf("Terminando el proceso padre\n");
-    }
-    else
-    {
-        // Proceso hijo
-        char *arg_Ptr[4];
-        arg_Ptr[0] = " child.bin";
-        arg_Ptr[1] = " Hola";
-        arg_Ptr[2] = " Soy el proceso hijo! ";
-        arg_Ptr[3] = NULL;
-
+        char *arg_Ptr[2];
+        arg_Ptr[0] = "child.bin";
+        arg_Ptr[1] = NULL;
         execv("./child.bin", arg_Ptr);
     }
+
+    // Se realiza una espera para que cada proceso tenga acciones diferentes
+    sleep(1);
+
+    // Se crea el segundo hijo
+    pid_t pid_2 = fork();
+
+    // En el caso que haya un error durante el fork
+    if (pid_2 == -1)
+    {
+        perror("fork");
+        exit(1);
+    }
+    // Ejecucion del hijo
+    else if (pid_2 == 0)
+    {
+        char *arg_Ptr[2];
+        arg_Ptr[0] = "child.bin";
+        arg_Ptr[1] = NULL;
+        execv("./child.bin", arg_Ptr);
+    }
+
+    int status;
+    waitpid(pid_1, &status, 0);
+    waitpid(pid_2, &status, 0);
 }
