@@ -12,14 +12,14 @@ int main()
 
     if (pid == -1)
     {
-        perror("fork");
+        perror("\nError al crear el PID\n");
         exit(1);
     }
 
     if (pid)
     {
         // Proceso padre
-        printf("Soy el proceso padre - %d\n", pid);
+        printf("Soy el proceso padre y tengo un hijo con PID: %d\n", pid);
         printf("Mi PID es: %d\n\n", getpid());
 
         int status;
@@ -41,7 +41,7 @@ int main()
         // Proceso hijo
         char *arg_Ptr[4];
         arg_Ptr[0] = " child.bin";
-        arg_Ptr[1] = " Hola";
+        arg_Ptr[1] = " Mensaje 1 desde el hijo";
         arg_Ptr[2] = " Soy el proceso hijo! ";
         arg_Ptr[3] = NULL;
 
