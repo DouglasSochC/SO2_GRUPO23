@@ -14,25 +14,21 @@ int main(int argc, char *argv[])
 
     while (1)
     {
-        int tipo_llamada = rand() % 3;
+        int tipo_llamada = rand() % 2;
         switch (tipo_llamada)
         {
-        case 0:
-        {
-            printf("%d - W\n", getpid());
-            break;
+            case 0:
+            {
+                printf("%d - W\n", getpid());
+                break;
+            }
+            case 1:
+            {
+                printf("%d - R\n", getpid());
+                break;
+            }
         }
-        case 1:
-        {
-            printf("%d - R\n", getpid());
-            break;
-        }
-        case 2:
-            printf("%d - O\n", getpid());
-            break;
-        }
-
-        int tiempo_espera = rand() % 3 + 1;
+        int tiempo_espera = rand() % 2 + 1;
         sleep(tiempo_espera);
     }
 }

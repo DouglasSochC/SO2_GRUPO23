@@ -14,7 +14,7 @@
 int total_system_calls = 0;
 int total_read_calls = 0;
 int total_write_calls = 0;
-int total_open_calls = 0;
+
 
 // Función para manejar la senial del SIGINT (Ctrl + C)
 void handle_sigint(int signum)
@@ -23,7 +23,7 @@ void handle_sigint(int signum)
     printf("\nSeñal SIGINT recibida\n");
     printf("\n**********************\n");
     printf("Número total de llamadas al sistema: %d\n", total_system_calls);
-    printf("Número de llamadas al sistema por tipo (Read: %d, Write: %d, Open: %d)\n", total_read_calls, total_write_calls, total_open_calls);
+    printf("Número de llamadas al sistema por tipo (Read: %d, Write: %d)\n", total_read_calls, total_write_calls);
     exit(0);
 }
 
@@ -117,10 +117,6 @@ int main()
         else if (primer_caracter == 'R')
         {
             total_read_calls++;
-        }
-        else if (primer_caracter == 'O')
-        {
-            total_open_calls++;
         }
         total_system_calls++;
 
