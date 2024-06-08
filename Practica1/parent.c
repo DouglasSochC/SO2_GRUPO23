@@ -7,6 +7,7 @@
 #include <sys/wait.h>
 
 #define LOG_FILE "syscalls.log"
+#define SCRIPT_NAME "trace.stp"
 #define FILE_NAME "practica1.txt"
 
 // Variables globales para contar las llamadas
@@ -26,6 +27,33 @@ void handle_sigint(int signum)
     exit(0);
 }
 
+// Funcion para crear y ejecutar un proceso hijo
+pid_t create_and_exec_child(const char *program)
+{
+    pid_t pid = fork();
+
+    // En el caso que haya un error durante el fork
+    if (pid == -1)
+    {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+    // Ejecución del hijo
+    else if (pid == 0)
+    {
+        char *arg_Ptr[2];
+        arg_Ptr[0] = (char *)program;
+        arg_Ptr[1] = NULL;
+        execv(program, arg_Ptr);
+
+        // Si execv falla
+        perror("execv");
+        exit(EXIT_FAILURE);
+    }
+
+    return pid;
+}
+
 int main()
 {
 
@@ -36,43 +64,82 @@ int main()
     FILE *log_file = fopen(LOG_FILE, "w");
     fclose(log_file);
 
-    // Se crea el primer hijo
-    pid_t pid_1 = fork();
-
-    // En el caso que haya un error durante el fork
-    if (pid_1 == -1)
-    {
-        perror("fork");
-        exit(1);
-    }
-    // Ejecucion del hijo
-    else if (pid_1 == 0)
-    {
-        char *arg_Ptr[2];
-        arg_Ptr[0] = "child.bin";
-        arg_Ptr[1] = NULL;
-        execv("./child.bin", arg_Ptr);
-    }
+    // Creacion del hijo 1
+    pid_t pid_1 = create_and_exec_child("child.bin");
 
     // Se realiza una espera para que cada proceso tenga acciones diferentes
     sleep(1);
 
-    // Se crea el segundo hijo
-    pid_t pid_2 = fork();
+    // Creacion del hijo 2
+    pid_t pid_2 = create_and_exec_child("child.bin");
 
-    // En el caso que haya un error durante el fork
-    if (pid_2 == -1)
+    // Variables auxiliares para ejecutar y obtener la informacion del trace
+    char command[100];
+    char buffer[128];
+    FILE *fp;
+
+    // Variable auxiliar para almacenar los log
+    FILE *log_fp;
+
+    // Variable que nos ayuda a identificar cual es el tipo de operacion que se esta realizando
+    char primer_caracter;
+
+    // Comando para obtener la informacion del trace
+    sprintf(command, "sudo stap %s %d %d", SCRIPT_NAME, pid_1, pid_2);
+
+    // Abrir el comando para lectura
+    fp = popen(command, "r");
+    if (fp == NULL)
     {
-        perror("fork");
-        exit(1);
+        perror("popen");
+        exit(EXIT_FAILURE);
     }
-    // Ejecucion del hijo
-    else if (pid_2 == 0)
+
+    // Abrir el archivo syscalls.log para escritura
+    log_fp = fopen(LOG_FILE, "a");
+    if (log_fp == NULL)
     {
-        char *arg_Ptr[2];
-        arg_Ptr[0] = "child.bin";
-        arg_Ptr[1] = NULL;
-        execv("./child.bin", arg_Ptr);
+        perror("fopen");
+        exit(EXIT_FAILURE);
+    }
+
+    // Leer la salida del comando
+    while (fgets(buffer, sizeof(buffer), fp) != NULL)
+    {
+        // Obtener el primer caracter
+        primer_caracter = buffer[0];
+
+        // Identificacion del tipo de operacion
+        if (primer_caracter == 'W')
+        {
+            total_write_calls++;
+        }
+        else if (primer_caracter == 'R')
+        {
+            total_read_calls++;
+        }
+        else if (primer_caracter == 'O')
+        {
+            total_open_calls++;
+        }
+        total_system_calls++;
+
+        // Almacenando el log
+        fprintf(log_fp, "%s", &buffer[1]);
+    }
+
+    // Cerrar el archivo syscalls.log
+    if (fclose(log_fp) != 0)
+    {
+        perror("fclose");
+        exit(EXIT_FAILURE);
+    }
+
+    // Cerrar el archivo
+    if (pclose(fp) == -1)
+    {
+        perror("pclose");
+        exit(EXIT_FAILURE);
     }
 
     int status;
