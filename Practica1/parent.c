@@ -17,14 +17,11 @@ int total_write_calls = 0;
 
 // Declaraciones de funciones
 void crear_archivo(const char *nombre_archivo);
-void eliminar_archivo(const char *nombre_archivo);
 void handle_sigint(int signum);
 
 // Función para manejar la señal del SIGINT (Ctrl + C)
 void handle_sigint(int signum)
 {
-    
-    // Obtener el SIGINT y parar el programa
     printf("\n**********************\n");
     printf("Señal SIGINT recibida\n");
     printf("**********************\n");
@@ -63,17 +60,12 @@ pid_t create_and_exec_child(const char *program)
 
 int main()
 {
-    // Eliminar archivo txt
-    eliminar_archivo(FILE_NAME);
-    // Crear txt
-    crear_archivo(FILE_NAME);
-
     // Manejador del SIGINT
     signal(SIGINT, handle_sigint);
 
-    // Crear o vaciar el archivo de los logs
-    FILE *log_file = fopen(LOG_FILE, "w");
-    fclose(log_file);
+    // Se crean los archivos para realizar las acciones de Write y Read y ademas se crea el archivo en el que se almacenaran los logs
+    crear_archivo(FILE_NAME);
+    crear_archivo(LOG_FILE);
 
     // Creación del hijo 1
     pid_t pid_1 = create_and_exec_child("child.bin");
@@ -133,6 +125,7 @@ int main()
 
         // Almacenando el log
         fprintf(log_fp, "%s", &buffer[1]);
+        printf("%s", &buffer[1]);
     }
 
     // Cerrar el archivo syscalls.log
@@ -156,28 +149,9 @@ int main()
     return 0;
 }
 
-// Función para crear un archivo en la ruta actual
-void crear_archivo(const char *nombre_archivo) {
-    FILE *archivo;
-    archivo = fopen(nombre_archivo, "w");
-
-    if (archivo == NULL) {
-        perror("Error al crear el archivo");
-        return;
-    }
-
-    // Cierra el archivo después de crearlo
-    fclose(archivo);
-    
-    printf("Archivo '%s' creado en la ruta actual.\n", nombre_archivo);
-}
-
-// Función para eliminar un archivo
-void eliminar_archivo(const char *nombre_archivo) {
-    // Intenta eliminar el archivo
-    if (remove(nombre_archivo) == 0) {
-        printf("Archivo '%s' eliminado exitosamente.\n", nombre_archivo);
-    } else {
-        perror("Error al eliminar el archivo");
-    }
+// Se encarga de crear un archivo y en el caso que este ya existe lo vuelve a crear de nuevo
+void crear_archivo(const char *nombre_archivo)
+{
+    FILE *practica_txt = fopen(nombre_archivo, "w");
+    fclose(practica_txt);
 }
