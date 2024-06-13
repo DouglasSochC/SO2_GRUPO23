@@ -5,6 +5,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <cjson/cJSON.h>
 
 // Prototipos de funciones
 void cargarUsuarios();
@@ -19,6 +20,9 @@ void deposito();
 void retiro();
 void transferencia();
 void consultarCuenta();
+
+void imprimirUsuarios();
+void imprimirOperaciones();
 
 // Estructura de datos para las cuentas
 typedef struct {
@@ -99,7 +103,45 @@ void cargarUsuarios() {
         printf("\nNo se puede abrir el archivo %s.\n", rutaArchivo);
         return;
     }
+
+    // Obtener el tamaño del archivo
+    fseek(file, 0, SEEK_END);
+    long fileSize = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    // Leer el archivo en una cadena
+    char *fileContent = (char *)malloc(fileSize + 1);
+    fread(fileContent, 1, fileSize, file);
+    fclose(file);
+    fileContent[fileSize] = '\0';
+
+    // Parsear el JSON
+    cJSON *json = cJSON_Parse(fileContent);
+    if (json == NULL) {
+        printf("\nError al parsear el archivo JSON.\n");
+        free(fileContent);
+        return;
+    }
+
+    int count = cJSON_GetArraySize(json);
+    usuarios = (Usuario *)malloc(count * sizeof(Usuario));
+    numUsuarios = count;
+
+    for (int i = 0; i < count; i++) {
+        cJSON *item = cJSON_GetArrayItem(json, i);
+        usuarios[i].no_cuenta = cJSON_GetObjectItem(item, "no_cuenta")->valueint;
+        strcpy(usuarios[i].nombre, cJSON_GetObjectItem(item, "nombre")->valuestring);
+        usuarios[i].saldo = cJSON_GetObjectItem(item, "saldo")->valuedouble;
+    }
+
     printf("\nCarga masiva de usuarios realizada desde %s.\n", rutaArchivo);
+
+    // Imprimir los usuarios cargados
+    imprimirUsuarios();
+
+    // Limpiar memoria
+    cJSON_Delete(json);
+    free(fileContent);
 }
 
 // Función para realizar una operación individual
@@ -145,8 +187,48 @@ void cargarOperaciones() {
         printf("\nNo se puede abrir el archivo %s.\n", rutaArchivo);
         return;
     }
+
+    // Obtener el tamaño del archivo
+    fseek(file, 0, SEEK_END);
+    long fileSize = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    // Leer el archivo en una cadena
+    char *fileContent = (char *)malloc(fileSize + 1);
+    fread(fileContent, 1, fileSize, file);
+    fclose(file);
+    fileContent[fileSize] = '\0';
+
+    // Parsear el JSON
+    cJSON *json = cJSON_Parse(fileContent);
+    if (json == NULL) {
+        printf("\nError al parsear el archivo JSON.\n");
+        free(fileContent);
+        return;
+    }
+
+    int count = cJSON_GetArraySize(json);
+    operaciones = (Operacion *)malloc(count * sizeof(Operacion));
+    numOperaciones = count;
+
+    for (int i = 0; i < count; i++) {
+        cJSON *item = cJSON_GetArrayItem(json, i);
+        operaciones[i].operacion = cJSON_GetObjectItem(item, "operacion")->valueint;
+        operaciones[i].cuenta1 = cJSON_GetObjectItem(item, "cuenta1")->valueint;
+        operaciones[i].cuenta2 = cJSON_GetObjectItem(item, "cuenta2")->valueint;
+        operaciones[i].monto = cJSON_GetObjectItem(item, "monto")->valuedouble;
+    }
+
     printf("\nCarga masiva de operaciones realizada desde %s.\n", rutaArchivo);
+
+    // Imprimir las operaciones cargadas
+    imprimirOperaciones();
+
+    // Limpiar memoria
+    cJSON_Delete(json);
+    free(fileContent);
 }
+
 
 // Función para generar reporte de estado de cuentas (ejemplo)
 void generarReporteCuentas() {
@@ -283,4 +365,21 @@ void consultarCuenta() {
     }
 
     printf("\nNúmero de cuenta no encontrado.\n");
+}
+
+void imprimirUsuarios() {
+    printf("\nUsuarios cargados:\n");
+    for (int i = 0; i < numUsuarios; i++) {
+        printf("No. Cuenta: %d, Nombre: %s, Saldo: %.2f\n",
+               usuarios[i].no_cuenta, usuarios[i].nombre, usuarios[i].saldo);
+    }
+}
+
+void imprimirOperaciones() {
+    printf("\nOperaciones cargadas:\n");
+    for (int i = 0; i < numOperaciones; i++) {
+        printf("Operación: %d, Cuenta 1: %d, Cuenta 2: %d, Monto: %.2f\n",
+               operaciones[i].operacion, operaciones[i].cuenta1,
+               operaciones[i].cuenta2, operaciones[i].monto);
+    }
 }
