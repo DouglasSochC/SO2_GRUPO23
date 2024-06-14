@@ -18,6 +18,9 @@
     -   make
     -   make DESTDIR=$pkgdir install
 
+## Para compilar y ejecutar el proyecto
+* make all
+
 ##  Para compilar usando la libreria cJSON:
 *   gcc -o main main.c cJSON.c -lcjson -lm
 *   No olvidar agregar los archivos cJSON.c Y cJSON.h al directorio del proyecto
