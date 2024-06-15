@@ -7,7 +7,6 @@
 #include "Operaciones/masivas.h"
 #include "Reportes/reporte.h"
 
-void realizarOperacionIndividual();
 void menu();
 
 // Variables globales para almacenar usuarios y operaciones
@@ -45,13 +44,13 @@ void menu()
         switch (opcion)
         {
         case 1:
-            cargarUsuarios(&cantidadUsuarios, usuarios);
+            cargarUsuarios(&usuarios, &cantidadUsuarios);
             break;
         case 2:
-            cargarOperaciones(&cantidadOperaciones, operaciones);
+            cargarOperaciones(operaciones, &cantidadOperaciones);
             break;
         case 3:
-            realizarOperacionIndividual();
+            menuOperacionIndividual(usuarios, cantidadUsuarios);
             break;
         case 4:
             generarReporteCuentas();
@@ -69,44 +68,4 @@ void menu()
             printf("\nOpción no válida. Intente de nuevo.\n");
         }
     } while (opcion != 7);
-}
-
-// Función para realizar una operación individual
-void realizarOperacionIndividual()
-{
-
-    int tipoOperacion;
-    do
-    {
-        printf("\n--- OPERACION INDIVIDUAL ---\n");
-        printf("1. Depósito\n");
-        printf("2. Retiro\n");
-        printf("3. Transferencia\n");
-        printf("4. Consultar cuenta\n");
-        printf("5. Volver al menu principal");
-        printf("\n----------------------------\n");
-        printf("Seleccione una operación: ");
-        scanf("%d", &tipoOperacion);
-
-        switch (tipoOperacion)
-        {
-        case 1:
-            printf("\nLa opción seleccionada es: Depósito\n");
-            break;
-        case 2:
-            printf("\nLa opción seleccionada es: Retiro\n");
-            break;
-        case 3:
-            printf("\nLa opción seleccionada es: Transferencia\n");
-            break;
-        case 4:
-            printf("\nLa opción seleccionada es: Consultar cuenta\n");
-            break;
-        case 5:
-            printf("\n");
-            break;
-        default:
-            printf("\nOpción no válida. Intente de nuevo.\n");
-        }
-    } while (tipoOperacion != 5);
 }

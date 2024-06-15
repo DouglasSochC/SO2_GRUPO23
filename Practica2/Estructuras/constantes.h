@@ -1,0 +1,11 @@
+#ifndef CONSTANTES_H
+#define CONSTANTES_H
+
+#define EXITO 0;
+#define CUENTA_INEXISTENTE 1;
+#define MONTO_NO_ES_NUMERO 2;
+#define MONTO_ES_MENOR_A_0 3;
+#define SALDO_INSUFICIENTE 4;
+#define OPERACION_NO_VALIDA 5;
+
+#endif // CONSTANTES_H

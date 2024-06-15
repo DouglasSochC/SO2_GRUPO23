@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void cargarUsuarios(int *cantidadUsuarios, Usuario *usuarios)
+void cargarUsuarios(Usuario **usuarios, int *cantidadUsuarios)
 {
 
     char rutaArchivo[] = "Carga/usuarios.json";
@@ -36,15 +36,15 @@ void cargarUsuarios(int *cantidadUsuarios, Usuario *usuarios)
     }
 
     int cantidad = cJSON_GetArraySize(json);
-    usuarios = (Usuario *)malloc(cantidad * sizeof(Usuario));
+    *usuarios = (Usuario *)malloc(cantidad * sizeof(Usuario));
     *cantidadUsuarios = cantidad;
 
     for (int i = 0; i < cantidad; i++)
     {
         cJSON *item = cJSON_GetArrayItem(json, i);
-        usuarios[i].no_cuenta = cJSON_GetObjectItem(item, "no_cuenta")->valueint;
-        strcpy(usuarios[i].nombre, cJSON_GetObjectItem(item, "nombre")->valuestring);
-        usuarios[i].saldo = cJSON_GetObjectItem(item, "saldo")->valuedouble;
+        (*usuarios)[i].no_cuenta = cJSON_GetObjectItem(item, "no_cuenta")->valueint;
+        strcpy((*usuarios)[i].nombre, cJSON_GetObjectItem(item, "nombre")->valuestring);
+        (*usuarios)[i].saldo = cJSON_GetObjectItem(item, "saldo")->valuedouble;
     }
 
     printf("\nCarga masiva de usuarios realizada desde %s.\n", rutaArchivo);
@@ -54,7 +54,7 @@ void cargarUsuarios(int *cantidadUsuarios, Usuario *usuarios)
     free(fileContent);
 }
 
-void cargarOperaciones(int *cantidadOperaciones, Operacion *operaciones)
+void cargarOperaciones(Operacion *operaciones, int *cantidadOperaciones)
 {
 
     char rutaArchivo[] = "Carga/operaciones.json";

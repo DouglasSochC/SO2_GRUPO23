@@ -3,7 +3,7 @@
 #include "../Estructuras/usuario.h"
 #include "../Estructuras/operacion.h"
 
-void cargarUsuarios(int *cantidadUsuarios, Usuario *usuarios);
-void cargarOperaciones(int *cantidadOperaciones, Operacion *operaciones);
+void cargarUsuarios(Usuario **usuarios, int *cantidadUsuarios);
+void cargarOperaciones(Operacion *operaciones, int *cantidadOperaciones);
 
 #endif // MASIVAS_H
