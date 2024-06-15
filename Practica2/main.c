@@ -12,6 +12,7 @@ void menu();
 // Variables globales para gestionar a los usuarios
 Usuario *usuarios = NULL;
 int cantidadUsuarios = 0;
+Error *errores = NULL;
 Operacion *operaciones = NULL;
 int cantidadOperaciones = 0;
 
