@@ -1,13 +1,14 @@
 #include "masivas.h"
-#include <cjson/cJSON.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <pthread.h>
+#include <stdbool.h>
 
 extern Usuario *usuarios;
 extern int cantidadUsuarios;
+extern Error *errores;
 pthread_mutex_t lock;
 char nombreArchivoUsuarios[100];
 
@@ -46,11 +47,18 @@ void cargaMasivaUsuarios()
     }
 
     sprintf(textoTemp, "Total : %d", totalTemp);
-    memset(textoTemp, '\0', sizeof(textoTemp)); // Se limpia la variable
-
     escribirEnArchivo(nombreArchivoUsuarios, textoTemp);
     escribirEnArchivo(nombreArchivoUsuarios, "");
     escribirEnArchivo(nombreArchivoUsuarios, "Errores:");
+    memset(textoTemp, '\0', sizeof(textoTemp)); // Se limpia la variable
+
+    for (int i = 0; i < cantidadUsuarios; i++)
+    {
+        if (strcmp(errores[i].descripcion, "") != 0)
+        {
+            escribirEnArchivo(nombreArchivoUsuarios, errores[i].descripcion);
+        }
+    }
 }
 
 void *lecturaArchivoUsuarios(void *arg)
@@ -92,7 +100,7 @@ void *lecturaArchivoUsuarios(void *arg)
     if (usuarios == NULL)
     {
         usuarios = (Usuario *)malloc(cantidad * sizeof(Usuario));
-        cantidadUsuarios = cantidad;
+        errores = (Error *)malloc(cantidad * sizeof(Error));
     }
     pthread_mutex_unlock(&lock);
 
@@ -102,12 +110,14 @@ void *lecturaArchivoUsuarios(void *arg)
 
     for (int i = indice_inicio; i < indice_final; i++)
     {
+        cantidadUsuarios++;
         pthread_mutex_lock(&lock);
         cJSON *item = cJSON_GetArrayItem(json, i);
         // printf("Hilo %d: Cargando usuario %d\n", hilo_id, cJSON_GetObjectItem(item, "no_cuenta")->valueint);
-        usuarios[i].no_cuenta = cJSON_GetObjectItem(item, "no_cuenta")->valueint;
-        strcpy(usuarios[i].nombre, cJSON_GetObjectItem(item, "nombre")->valuestring);
-        usuarios[i].saldo = cJSON_GetObjectItem(item, "saldo")->valuedouble;
+        cJSON *no_cuenta = cJSON_GetObjectItem(item, "no_cuenta");
+        cJSON *nombre = cJSON_GetObjectItem(item, "nombre");
+        cJSON *saldo = cJSON_GetObjectItem(item, "saldo");
+        validarUsuario(i, no_cuenta, nombre, saldo);
         (*cantidadDatosLeidos)++;
         pthread_mutex_unlock(&lock);
     }
@@ -204,9 +214,8 @@ void crearArchivoLogUsuarios()
     // Se formatea el nombre del archivo
     sprintf(nombreArchivoUsuarios, "Reportes/carga_%s.log", fechaHora);
 
-    FILE *file;
     // Abrir el archivo en modo escritura, lo creará si no existe.
-    file = fopen(nombreArchivoUsuarios, "a");
+    FILE *file = fopen(nombreArchivoUsuarios, "a");
 
     // Se escribe el titulo
     fprintf(file, "%s\n", "----------------- Carga de Usuarios -----------------\n");
@@ -230,4 +239,63 @@ void escribirEnArchivo(char *nombreArchivo, char *texto)
     }
     fprintf(archivo, "%s\n", texto); // Escribe la línea de texto en el archivo
     fclose(archivo);                 // Cierra el archivo
+}
+
+void validarUsuario(int fila, cJSON *numCuenta, cJSON *nombre, cJSON *saldo)
+{
+    bool exito = true;
+
+    // Se verifica si el numero de cuenta es entero
+    if (numCuenta != NULL && cJSON_IsNumber(numCuenta))
+    {
+        // Se verifica si el numero de cuenta ya existe
+        for (int i = 0; i < cantidadUsuarios; i++)
+        {
+            if (usuarios[i].no_cuenta == numCuenta->valueint)
+            {
+                sprintf(errores[fila].descripcion, "  - Estructura #%d: Numero de cuenta duplicada.", (fila + 1));
+                exito = false;
+                break;
+            }
+        }
+    }
+    else
+    {
+        sprintf(errores[fila].descripcion, "  - Estructura #%d: Numero de cuenta no valida.", (fila + 1));
+        exito = false;
+    }
+
+    // Se verifica que el nombre sea texto
+    if (!(nombre != NULL && cJSON_IsString(nombre)))
+    {
+        sprintf(errores[fila].descripcion, "  - Estructura #%d: Nombre no valido.", (fila + 1));
+        exito = false;
+    }
+
+    // Se verifica si el saldo es double
+    if (saldo != NULL && cJSON_IsNumber(saldo))
+    {
+        if (saldo->valuedouble < 0)
+        {
+            sprintf(errores[fila].descripcion, "  - Estructura #%d: El saldo no puede ser menor a 0.", (fila + 1));
+            exito = false;
+        }
+    }
+    else
+    {
+        sprintf(errores[fila].descripcion, "  - Estructura #%d: Saldo no valido.", (fila + 1));
+        exito = false;
+    }
+
+    // En el dado caso que todo este bien se registra el usuario
+    if (exito)
+    {
+        usuarios[fila].no_cuenta = numCuenta->valueint;
+        strcpy(usuarios[fila].nombre, nombre->valuestring);
+        usuarios[fila].saldo = saldo->valuedouble;
+    }
+    else
+    {
+        usuarios[fila].no_cuenta = -1;
+    }
 }
