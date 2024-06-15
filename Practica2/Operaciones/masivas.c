@@ -121,7 +121,7 @@ void *lecturaArchivoUsuarios(void *arg)
         (*cantidadDatosLeidos)++;
         pthread_mutex_unlock(&lock);
     }
-
+    printf("\nCarga masiva de usuarios realizada desde %s y el hilo con ID %d.\n", rutaArchivo, hilo_id);
     // Limpiar memoria
     cJSON_Delete(json);
     free(fileContent);

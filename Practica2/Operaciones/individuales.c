@@ -1,5 +1,7 @@
 #include "individuales.h"
 #include <stdio.h>
+#include <ctype.h>
+#include <stdlib.h>
 
 void menuOperacionIndividual(Usuario *usuarios, int cantidadUsuarios)
 {
@@ -22,7 +24,7 @@ void menuOperacionIndividual(Usuario *usuarios, int cantidadUsuarios)
             deposito(usuarios, cantidadUsuarios);
             break;
         case 2:
-            printf("\nLa opción seleccionada es: Retiro\n");
+            retiro(usuarios, cantidadUsuarios);
             break;
         case 3:
             printf("\nLa opción seleccionada es: Transferencia\n");
@@ -42,15 +44,38 @@ void menuOperacionIndividual(Usuario *usuarios, int cantidadUsuarios)
 int deposito(Usuario *usuarios, int cantidadUsuarios)
 {
 
+    char input[100];
     int no_cuenta;
     double monto;
+
+    // Solicitar número de cuenta
     printf("\nIngrese el número de cuenta: ");
-    scanf("%d", &no_cuenta);
+    scanf("%s", input);
+    
+    if (esEntero(input)) {
+        no_cuenta = atoi(input);
+        printf("Formato de número de cuenta válido: %d\n", no_cuenta);
+    } else {
+        printf("Formato de número de cuenta inválido.\n");
+        return OPERACION_NO_VALIDA;
+    }
+
+    // Solicitar monto
     printf("\nIngrese el monto a depositar: ");
-    scanf("%lf", &monto);
+    scanf("%s", input);
+
+    if (esFlotante(input)) {
+        monto = atof(input);
+        printf("Formato de monto válido: %.2lf\n", monto);
+    } else {
+        printf("Formato de monto inválido.\n");
+        return MONTO_NO_ES_NUMERO;
+    }
+
 
     if (monto <= 0)
     {
+        printf("\nEl monto ingresado debe ser mayor a 0. \n");
         return MONTO_ES_MENOR_A_0;
     }
 
@@ -63,19 +88,65 @@ int deposito(Usuario *usuarios, int cantidadUsuarios)
             return EXITO;
         }
     }
-
+    printf("\nEl numero de cuenta %d no existe\n", no_cuenta);
     return CUENTA_INEXISTENTE;
 }
 
 int retiro(Usuario *usuarios, int cantidadUsuarios)
-{
-    return EXITO;
-    // int no_cuenta;
-    // double monto;
-    // printf("\n\nIngrese el número de cuenta: ");
-    // scanf("%d", &no_cuenta);
-    // printf("\n\nIngrese el monto a retirar: ");
-    // scanf("%lf", &monto);
+{   
+    char input[100];
+    int no_cuenta;
+    double monto;
+
+    // Solicitar número de cuenta
+    printf("\nIngrese el número de cuenta: ");
+    scanf("%s", input);
+    
+    if (esEntero(input)) {
+        no_cuenta = atoi(input);
+        printf("Formato de número de cuenta válido: %d\n", no_cuenta);
+    } else {
+        printf("Formato de número de cuenta inválido.\n");
+        return OPERACION_NO_VALIDA;
+    }
+
+    // Solicitar monto
+    printf("\nIngrese el monto a retirar: ");
+    scanf("%s", input);
+
+    if (esFlotante(input)) {
+        monto = atof(input);
+        printf("Formato de monto válido: %.2lf\n", monto);
+    } else {
+        printf("Formato de monto inválido.\n");
+        return MONTO_NO_ES_NUMERO;
+    }
+
+
+    if (monto <= 0)
+    {
+        printf("\nEl monto ingresado debe ser mayor a 0. \n");
+        return MONTO_ES_MENOR_A_0;
+    }
+
+    for (int i = 0; i < cantidadUsuarios; i++)
+    {
+        if (usuarios[i].no_cuenta == no_cuenta)
+        {
+            if(usuarios[i].saldo < monto){
+                printf("\nEl saldo de la cuenta %d, no es suficiente. Por lo tanto, no se puede efectuar el retiro.\n", no_cuenta);
+                return SALDO_INSUFICIENTE;
+            }
+            usuarios[i].saldo -= monto;
+            printf("\nRetiro realizado. Nuevo saldo: %.2f\n\n", usuarios[i].saldo);
+            return EXITO;
+        }
+    }
+    printf("\nEl numero de cuenta %d no existe\n", no_cuenta);
+    return CUENTA_INEXISTENTE;
+    
+  
+   
 
     // if (monto <= 0)
     // {
@@ -165,4 +236,35 @@ int consultarCuenta(Usuario *usuarios, int cantidadUsuarios)
     // }
 
     // printf("\nNúmero de cuenta no encontrado.\n");
+}
+
+// Implementación de la función para verificar si una cadena es un número entero positivo
+int esEntero(const char *cadena) {
+    if (*cadena == '-') return 0; // Rechazar si empieza con un signo negativo
+    if (*cadena == '\0') return 0; // Cadena vacía no es un número válido
+
+    while (*cadena) {
+        if (!isdigit(*cadena)) return 0;
+        cadena++;
+    }
+    return 1;
+}
+
+// Implementación de la función para verificar si una cadena es un número flotante positivo
+int esFlotante(const char *cadena) {
+    int puntoEncontrado = 0;
+
+    if (*cadena == '-') return 0; // Rechazar si empieza con un signo negativo
+    if (*cadena == '\0') return 0; // Cadena vacía no es un número válido
+
+    while (*cadena) {
+        if (*cadena == '.') {
+            if (puntoEncontrado) return 0; // Más de un punto no es válido
+            puntoEncontrado = 1;
+        } else if (!isdigit(*cadena)) {
+            return 0;
+        }
+        cadena++;
+    }
+    return 1;
 }
