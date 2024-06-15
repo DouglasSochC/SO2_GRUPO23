@@ -3,7 +3,13 @@
 #include "../Estructuras/usuario.h"
 #include "../Estructuras/operacion.h"
 
+// Publica
+void cargaMasivaUsuarios();
 void cargarOperaciones(Operacion *operaciones, int *cantidadOperaciones);
-void *cargarUsuarios(void *arg);
+
+// Privada
+void *lecturaArchivoUsuarios(void *arg);
+void crearArchivoLogUsuarios();
+void escribirEnArchivo(char *nombreArchivo, char *texto);
 
 #endif // MASIVAS_H

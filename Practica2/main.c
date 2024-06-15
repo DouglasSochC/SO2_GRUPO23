@@ -9,12 +9,11 @@
 
 void menu();
 
-// Variables globales para almacenar usuarios y operaciones
+// Variables globales para gestionar a los usuarios
 Usuario *usuarios = NULL;
 int cantidadUsuarios = 0;
 Operacion *operaciones = NULL;
 int cantidadOperaciones = 0;
-pthread_mutex_t lock;
 
 // Función principal
 int main()
@@ -44,20 +43,7 @@ void menu()
         switch (opcion)
         {
         case 1:
-            pthread_mutex_init(&lock, NULL); // Inicializamos nuestro mutex
-            pthread_t hilos[3];
-            int ids[3] = {0, 1, 2};
-
-            for (int i = 0; i < 3; i++)
-            {
-                pthread_create(&hilos[i], NULL, cargarUsuarios, &ids[i]);
-            }
-
-            for (int i = 0; i < 3; i++)
-            {
-                pthread_join(hilos[i], NULL);
-            }
-            pthread_mutex_destroy(&lock); // Liberamos los recursos del semaforo
+            cargaMasivaUsuarios();
             break;
         case 2:
             cargarOperaciones(operaciones, &cantidadOperaciones);
