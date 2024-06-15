@@ -1,21 +1,21 @@
 #include "reporte.h"
 #include <stdio.h>
 
-// Función para generar reporte de estado de cuentas (ejemplo)
-void generarReporteCuentas()
+void generarReporteCuentas(Usuario *usuarios, int cantidadUsuarios)
 {
-    // Aquí iría el código para generar el reporte de estado de cuentas
-    printf("\nReporte de estado de cuentas generado.\n");
+    for (int i = 0; i < cantidadUsuarios; i++)
+    {
+        printf("No. Cuenta: %d, Nombre: %s, Saldo: %.2f\n",
+               usuarios[i].no_cuenta, usuarios[i].nombre, usuarios[i].saldo);
+    }
 }
 
-// Función para generar reporte de carga de usuarios (ejemplo)
 void generarReporteCargaUsuarios()
 {
     // Aquí iría el código para generar el reporte de carga de usuarios
     printf("\nReporte de carga de usuarios generado.\n");
 }
 
-// Función para generar reporte de carga de operaciones (ejemplo)
 void generarReporteCargaOperaciones()
 {
     // Aquí iría el código para generar el reporte de carga de operaciones

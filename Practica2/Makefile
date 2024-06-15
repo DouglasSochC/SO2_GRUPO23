@@ -10,7 +10,7 @@ all: clean $(MAIN_BIN) run
 
 # Regla para compilar main.c en main
 $(MAIN_BIN):
-	$(CC) -o $(MAIN_BIN) main.c cJSON/cJSON.c Operaciones/individuales.c Operaciones/masivas.c Reportes/reporte.c $(CFLAGS) 
+	$(CC) -o $(MAIN_BIN) main.c cJSON/cJSON.c Operaciones/individuales.c Operaciones/masivas.c Reportes/reporte.c $(CFLAGS)
 
 # Regla para ejecutar el programa parent
 run:

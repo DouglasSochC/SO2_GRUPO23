@@ -14,6 +14,7 @@ Usuario *usuarios = NULL;
 int cantidadUsuarios = 0;
 Operacion *operaciones = NULL;
 int cantidadOperaciones = 0;
+pthread_mutex_t lock;
 
 // Función principal
 int main()
@@ -25,7 +26,6 @@ int main()
 // Implementación del menú
 void menu()
 {
-
     int opcion;
     do
     {
@@ -44,7 +44,20 @@ void menu()
         switch (opcion)
         {
         case 1:
-            cargarUsuarios(&usuarios, &cantidadUsuarios);
+            pthread_mutex_init(&lock, NULL); // Inicializamos nuestro mutex
+            pthread_t hilos[3];
+            int ids[3] = {0, 1, 2};
+
+            for (int i = 0; i < 3; i++)
+            {
+                pthread_create(&hilos[i], NULL, cargarUsuarios, &ids[i]);
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                pthread_join(hilos[i], NULL);
+            }
+            pthread_mutex_destroy(&lock); // Liberamos los recursos del semaforo
             break;
         case 2:
             cargarOperaciones(operaciones, &cantidadOperaciones);
@@ -53,7 +66,7 @@ void menu()
             menuOperacionIndividual(usuarios, cantidadUsuarios);
             break;
         case 4:
-            generarReporteCuentas();
+            generarReporteCuentas(usuarios, cantidadUsuarios);
             break;
         case 5:
             generarReporteCargaUsuarios();
