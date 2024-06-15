@@ -30,7 +30,7 @@ void menuOperacionIndividual(Usuario *usuarios, int cantidadUsuarios)
             printf("\nLa opción seleccionada es: Transferencia\n");
             break;
         case 4:
-            printf("\nLa opción seleccionada es: Consultar cuenta\n");
+            consultarCuenta(usuarios, cantidadUsuarios);
             break;
         case 5:
             printf("\n");
@@ -221,7 +221,34 @@ int transaccion(Usuario *usuarios, int cantidadUsuarios)
 
 int consultarCuenta(Usuario *usuarios, int cantidadUsuarios)
 {
-    return EXITO;
+    char input[100];
+    int no_cuenta;
+   
+
+    // Solicitar número de cuenta
+    printf("\nIngrese el número de cuenta: ");
+    scanf("%s", input);
+    
+    if (esEntero(input)) {
+        no_cuenta = atoi(input);
+        printf("Formato de número de cuenta válido: %d\n", no_cuenta);
+    } else {
+        printf("Formato de número de cuenta inválido.\n");
+        return OPERACION_NO_VALIDA;
+    }
+
+    for (int i = 0; i < cantidadUsuarios; i++) {
+        if (usuarios[i].no_cuenta == no_cuenta) {
+            printf("\nNúmero de cuenta: %d\n", usuarios[i].no_cuenta);
+            printf("Nombre: %s\n", usuarios[i].nombre);
+            printf("Saldo: %.2f\n\n", usuarios[i].saldo);
+            return EXITO;
+        }
+    }
+
+    printf("\nEl numero de cuenta %d no existe\n", no_cuenta);
+    return CUENTA_INEXISTENTE;
+    
     // int no_cuenta;
     // printf("\nIngrese el número de cuenta: ");
     // scanf("%d", &no_cuenta);
