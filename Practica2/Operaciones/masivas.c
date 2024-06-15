@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <pthread.h>
 
 extern Usuario *usuarios;
@@ -198,10 +199,10 @@ void crearArchivoLogUsuarios()
              tm.tm_min,         // Minuto
              tm.tm_sec);        // Segundo
 
+    // Se crea la carpeta
+    mkdir("Reportes", 0777);
     // Se formatea el nombre del archivo
-    strcpy(nombreArchivoUsuarios, "carga_");
-    strcat(nombreArchivoUsuarios, fechaHora);
-    strcat(nombreArchivoUsuarios, ".log");
+    sprintf(nombreArchivoUsuarios, "Reportes/carga_%s.log", fechaHora);
 
     FILE *file;
     // Abrir el archivo en modo escritura, lo creará si no existe.

@@ -5,7 +5,7 @@
 #include <sys/wait.h>
 #include "Operaciones/individuales.h"
 #include "Operaciones/masivas.h"
-#include "Reportes/reporte.h"
+#include "Operaciones/reportes.h"
 
 void menu();
 
@@ -33,9 +33,7 @@ void menu()
         printf("2. Carga masiva de operaciones\n");
         printf("3. Realizar operación individual\n");
         printf("4. Generar reporte de estado de cuentas\n");
-        printf("5. Generar reporte de carga de usuarios\n");
-        printf("6. Generar reporte de carga de operaciones\n");
-        printf("7. Salir");
+        printf("5. Salir");
         printf("\n-------------------------------------------\n");
         printf("Seleccione una opción: ");
         scanf("%d", &opcion);
@@ -55,16 +53,10 @@ void menu()
             generarReporteCuentas(usuarios, cantidadUsuarios);
             break;
         case 5:
-            generarReporteCargaUsuarios();
-            break;
-        case 6:
-            generarReporteCargaOperaciones();
-            break;
-        case 7:
             printf("\nSaliendo del programa...\n");
             break;
         default:
             printf("\nOpción no válida. Intente de nuevo.\n");
         }
-    } while (opcion != 7);
+    } while (opcion != 5);
 }
