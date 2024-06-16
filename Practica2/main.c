@@ -13,6 +13,7 @@ void menu();
 Usuario *usuarios = NULL;
 int cantidadUsuarios = 0;
 Error *errores = NULL;
+int cantidadErrores = 0;
 Operacion *operaciones = NULL;
 int cantidadOperaciones = 0;
 
@@ -45,7 +46,7 @@ void menu()
             cargaMasivaUsuarios();
             break;
         case 2:
-            cargarOperaciones(operaciones, &cantidadOperaciones);
+            cargaMasivaOperaciones();
             break;
         case 3:
             menuOperacionIndividual(usuarios, cantidadUsuarios);

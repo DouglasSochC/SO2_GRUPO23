@@ -9,8 +9,10 @@
 extern Usuario *usuarios;
 extern int cantidadUsuarios;
 extern Error *errores;
+extern int cantidadErrores;
 pthread_mutex_t lock;
 char nombreArchivoUsuarios[100];
+char nombreArchivoOperaciones[100];
 
 void cargaMasivaUsuarios()
 {
@@ -52,12 +54,69 @@ void cargaMasivaUsuarios()
     escribirEnArchivo(nombreArchivoUsuarios, "Errores:");
     memset(textoTemp, '\0', sizeof(textoTemp)); // Se limpia la variable
 
-    for (int i = 0; i < cantidadUsuarios; i++)
+    if (errores != NULL)
     {
-        if (strcmp(errores[i].descripcion, "") != 0)
+        for (int i = 0; i < cantidadErrores; i++)
         {
-            escribirEnArchivo(nombreArchivoUsuarios, errores[i].descripcion);
+            if (strcmp(errores[i].descripcion, "") != 0)
+            {
+                escribirEnArchivo(nombreArchivoUsuarios, errores[i].descripcion);
+            }
         }
+        errores = NULL;
+    }
+}
+
+void cargaMasivaOperaciones()
+{
+    // Se crea el archivo log para ir almacenando la informacion que se obtuvo durante la carga de las operaciones
+    crearArchivoLogOperaciones();
+
+    pthread_mutex_init(&lock, NULL); // Inicializamos nuestro mutex
+    pthread_t hilos[4];
+    int ids[4] = {0, 1, 2, 3};
+
+    for (int i = 0; i < 4; i++)
+    {
+        pthread_create(&hilos[i], NULL, lecturaArchivoOperaciones, &ids[i]);
+    }
+
+    int cantidades[4] = {0, 0, 0, 0};
+    for (int i = 0; i < 4; i++)
+    {
+        void *ret_val;
+        pthread_join(hilos[i], &ret_val);
+        cantidades[i] = *(int *)ret_val;
+    }
+    pthread_mutex_destroy(&lock); // Liberamos los recursos del semaforo
+
+    escribirEnArchivo(nombreArchivoOperaciones, "Operaciones por hilo:");
+    int totalHilosTemp = 0;
+    char textoTemp[100];
+    for (int i = 0; i < 4; i++)
+    {
+        totalHilosTemp += cantidades[i];
+        sprintf(textoTemp, "Hilo #%d: %d", i + 1, cantidades[i]);
+        escribirEnArchivo(nombreArchivoOperaciones, textoTemp);
+        memset(textoTemp, '\0', sizeof(textoTemp)); // Se limpia la variable
+    }
+
+    sprintf(textoTemp, "Total : %d", totalHilosTemp);
+    escribirEnArchivo(nombreArchivoOperaciones, textoTemp);
+    escribirEnArchivo(nombreArchivoOperaciones, "");
+    escribirEnArchivo(nombreArchivoOperaciones, "Errores:");
+    memset(textoTemp, '\0', sizeof(textoTemp)); // Se limpia la variable
+
+    if (errores != NULL)
+    {
+        for (int i = 0; i < cantidadErrores; i++)
+        {
+            if (strcmp(errores[i].descripcion, "") != 0)
+            {
+                escribirEnArchivo(nombreArchivoOperaciones, errores[i].descripcion);
+            }
+        }
+        errores = NULL;
     }
 }
 
@@ -74,6 +133,9 @@ void *lecturaArchivoUsuarios(void *arg)
     if (file == NULL)
     {
         printf("\nNo se puede abrir el archivo %s.\n", rutaArchivo);
+        int *retval = malloc(sizeof(int));
+        *retval = -1;
+        pthread_exit(retval);
     }
 
     // Obtener el tamaño del archivo
@@ -93,6 +155,9 @@ void *lecturaArchivoUsuarios(void *arg)
     {
         printf("\nError al parsear el archivo JSON.\n");
         free(fileContent);
+        int *retval = malloc(sizeof(int));
+        *retval = -1;
+        pthread_exit(retval);
     }
 
     int cantidad = cJSON_GetArraySize(json);
@@ -100,7 +165,11 @@ void *lecturaArchivoUsuarios(void *arg)
     if (usuarios == NULL)
     {
         usuarios = (Usuario *)malloc(cantidad * sizeof(Usuario));
+    }
+    if (errores == NULL)
+    {
         errores = (Error *)malloc(cantidad * sizeof(Error));
+        cantidadErrores = cantidad;
     }
     pthread_mutex_unlock(&lock);
 
@@ -121,7 +190,7 @@ void *lecturaArchivoUsuarios(void *arg)
         (*cantidadDatosLeidos)++;
         pthread_mutex_unlock(&lock);
     }
-    printf("\nCarga masiva de usuarios realizada desde %s y el hilo con ID %d.\n", rutaArchivo, hilo_id);
+
     // Limpiar memoria
     cJSON_Delete(json);
     free(fileContent);
@@ -130,15 +199,24 @@ void *lecturaArchivoUsuarios(void *arg)
     pthread_exit(cantidadDatosLeidos);
 }
 
-void cargarOperaciones(Operacion *operaciones, int *cantidadOperaciones)
+void *lecturaArchivoOperaciones(void *arg)
 {
+    // Variable para identificar la cantidad de datos que leo el hilo
+    int *cantidadDatosLeidos = malloc(sizeof(int));
+    *cantidadDatosLeidos = 0;
 
+    // Obtencion del id del hilo
+    int hilo_id = *((int *)arg);
+
+    // Manejo del archivo
     char rutaArchivo[] = "Carga/operaciones.json";
     FILE *file = fopen(rutaArchivo, "r");
     if (file == NULL)
     {
         printf("\nNo se puede abrir el archivo %s.\n", rutaArchivo);
-        return;
+        int *retval = malloc(sizeof(int));
+        *retval = -1;
+        pthread_exit(retval);
     }
 
     // Obtener el tamaño del archivo
@@ -158,27 +236,41 @@ void cargarOperaciones(Operacion *operaciones, int *cantidadOperaciones)
     {
         printf("\nError al parsear el archivo JSON.\n");
         free(fileContent);
-        return;
+        int *retval = malloc(sizeof(int));
+        *retval = -1;
+        pthread_exit(retval);
     }
 
     int cantidad = cJSON_GetArraySize(json);
-    operaciones = (Operacion *)malloc(cantidad * sizeof(Operacion));
-    *cantidadOperaciones = cantidad;
-
-    for (int i = 0; i < cantidad; i++)
+    pthread_mutex_lock(&lock);
+    if (errores == NULL)
     {
-        cJSON *item = cJSON_GetArrayItem(json, i);
-        operaciones[i].operacion = cJSON_GetObjectItem(item, "operacion")->valueint;
-        operaciones[i].cuenta1 = cJSON_GetObjectItem(item, "cuenta1")->valueint;
-        operaciones[i].cuenta2 = cJSON_GetObjectItem(item, "cuenta2")->valueint;
-        operaciones[i].monto = cJSON_GetObjectItem(item, "monto")->valuedouble;
+        errores = (Error *)malloc(cantidad * sizeof(Error));
+        cantidadErrores = cantidad;
     }
+    pthread_mutex_unlock(&lock);
+    int tamanio_bloque = cantidad / 4;
+    int indice_inicio = hilo_id * tamanio_bloque;
+    int indice_final = (hilo_id == 3) ? cantidad : (hilo_id + 1) * tamanio_bloque;
 
-    printf("\nCarga masiva de operaciones realizada desde %s.\n", rutaArchivo);
+    for (int i = indice_inicio; i < indice_final; i++)
+    {
+        pthread_mutex_lock(&lock);
+        cJSON *item = cJSON_GetArrayItem(json, i);
+        // cJSON_GetObjectItem(item, "operacion")->valueint;
+        // cJSON_GetObjectItem(item, "cuenta1")->valueint;
+        // cJSON_GetObjectItem(item, "cuenta2")->valueint;
+        // cJSON_GetObjectItem(item, "monto")->valuedouble;
+        (*cantidadDatosLeidos)++;
+        pthread_mutex_unlock(&lock);
+    }
 
     // Limpiar memoria
     cJSON_Delete(json);
     free(fileContent);
+
+    // Devolver la cantidad de datos que leyo el hilo
+    pthread_exit(cantidadDatosLeidos);
 }
 
 void crearArchivoLogUsuarios()
@@ -219,6 +311,54 @@ void crearArchivoLogUsuarios()
 
     // Se escribe el titulo
     fprintf(file, "%s\n", "----------------- Carga de Usuarios -----------------\n");
+
+    // Se escribe la fecha
+    fprintf(file, "%s", "Fecha: ");
+    fprintf(file, "%s", textoFechaHora);
+    fprintf(file, "%s", "\n\n");
+
+    // Cerrar el archivo
+    fclose(file);
+}
+
+void crearArchivoLogOperaciones()
+{
+    // Obtener la hora actual
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+
+    // Crear una cadena para almacenar la fecha y hora formateada
+    char fechaHora[20];
+    char textoFechaHora[20];
+
+    // Formatear la fecha y hora
+    snprintf(fechaHora, sizeof(fechaHora), "%04d_%02d_%02d-%02d_%02d_%02d",
+             tm.tm_year + 1900, // Año
+             tm.tm_mon + 1,     // Mes (0-11, por eso se suma 1)
+             tm.tm_mday,        // Día del mes
+             tm.tm_hour,        // Hora
+             tm.tm_min,         // Minuto
+             tm.tm_sec);        // Segundo
+
+    // Formatear la fecha y hora
+    snprintf(textoFechaHora, sizeof(textoFechaHora), "%04d-%02d-%02d %02d:%02d:%02d",
+             tm.tm_year + 1900, // Año
+             tm.tm_mon + 1,     // Mes (0-11, por eso se suma 1)
+             tm.tm_mday,        // Día del mes
+             tm.tm_hour,        // Hora
+             tm.tm_min,         // Minuto
+             tm.tm_sec);        // Segundo
+
+    // Se crea la carpeta
+    mkdir("Reportes", 0777);
+    // Se formatea el nombre del archivo
+    sprintf(nombreArchivoOperaciones, "Reportes/operaciones_%s.log", fechaHora);
+
+    // Abrir el archivo en modo escritura, lo creará si no existe.
+    FILE *file = fopen(nombreArchivoOperaciones, "a");
+
+    // Se escribe el titulo
+    fprintf(file, "%s\n", "----------------- Operaciones Realizadas -----------------\n");
 
     // Se escribe la fecha
     fprintf(file, "%s", "Fecha: ");

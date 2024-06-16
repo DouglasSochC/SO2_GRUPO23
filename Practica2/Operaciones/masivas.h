@@ -7,12 +7,14 @@
 
 // Publica
 void cargaMasivaUsuarios();
-void cargarOperaciones(Operacion *operaciones, int *cantidadOperaciones);
+void cargaMasivaOperaciones();
 
 // Privada
 void *lecturaArchivoUsuarios(void *arg);
+void *lecturaArchivoOperaciones(void *arg);
 void validarUsuario(int fila, cJSON *numCuenta, cJSON *nombre, cJSON *saldo);
 void crearArchivoLogUsuarios();
+void crearArchivoLogOperaciones();
 void escribirEnArchivo(char *nombreArchivo, char *texto);
 
 #endif // MASIVAS_H
