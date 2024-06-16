@@ -2,6 +2,15 @@
 #include "../cJSON/cJSON.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>  // Necesario para isdigit()
+
+// Función auxiliar para validar si un número es un entero
+int esNumeroEntero(int numero)
+{
+    // Comprueba si el número es mayor o igual a cero
+    // Esto también asegura que no sea un número negativo
+    return (numero >= 0);
+}
 
 // Función para generar un reporte JSON del estado de cuentas
 void generarReporteCuentas(Usuario *usuarios, int cantidadUsuarios)
@@ -16,6 +25,11 @@ void generarReporteCuentas(Usuario *usuarios, int cantidadUsuarios)
 
     for (int i = 0; i < cantidadUsuarios; i++)
     {
+        // Validar que el número de cuenta sea un dato entero y válido
+        if (!esNumeroEntero(usuarios[i].no_cuenta)) {
+            continue; // Saltar al siguiente usuario
+        }
+
         // Crear un objeto JSON para cada usuario
         cJSON *usuarioJSON = cJSON_CreateObject();
         cJSON_AddNumberToObject(usuarioJSON, "no_cuenta", usuarios[i].no_cuenta);
