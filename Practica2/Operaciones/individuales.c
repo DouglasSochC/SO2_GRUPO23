@@ -27,7 +27,7 @@ void menuOperacionIndividual(Usuario *usuarios, int cantidadUsuarios)
             retiro(usuarios, cantidadUsuarios);
             break;
         case 3:
-            printf("\nLa opción seleccionada es: Transferencia\n");
+            transaccion(usuarios, cantidadUsuarios);
             break;
         case 4:
             consultarCuenta(usuarios, cantidadUsuarios);
@@ -171,52 +171,84 @@ int retiro(Usuario *usuarios, int cantidadUsuarios)
 
 int transaccion(Usuario *usuarios, int cantidadUsuarios)
 {
+
+    char input[100]; // Buffer para leer las entradas del usuario
+    int cuenta_origen, cuenta_destino;
+    double monto;
+
+    // Solicitar el número de cuenta de origen
+    printf("\n\nIngrese el número de cuenta de origen: ");
+    scanf("%s", input);
+
+    if (esEntero(input)) {
+        cuenta_origen = atoi(input);
+        printf("Formato de número de cuenta válido: %d\n", cuenta_origen);
+    } else {
+        printf("Formato de número de cuenta de origen inválido. Debe ser un entero positivo.\n");
+        return OPERACION_NO_VALIDA;
+    }
+
+    // Solicitar el número de cuenta de destino
+    printf("\n\nIngrese el número de cuenta de destino: ");
+    scanf("%s", input);
+
+    if (esEntero(input)) {
+        cuenta_destino = atoi(input);
+        printf("Formato de número de cuenta de destino válido: %d\n", cuenta_destino);
+    } else {
+        printf("Formato de número de cuenta de destino inválido. Debe ser un entero positivo.\n");
+        return OPERACION_NO_VALIDA; // Salir del programa por entrada inválida
+    }
+
+    // Solicitar el monto a transferir
+    printf("\n\nIngrese el monto a transferir: ");
+    scanf("%s", input);
+
+    if (esFlotante(input)) {
+        monto = atof(input);
+        if (monto <= 0) {
+            printf("\nEl monto debe ser mayor a 0.\n");
+            return MONTO_ES_MENOR_A_0;
+        } else {
+            printf("Monto válido: %.2lf\n", monto);
+        }
+    } else {
+        printf("Formato del monto inválido.\n");
+        return MONTO_NO_ES_NUMERO;
+    }
+
+    Usuario *origen = NULL;
+    Usuario *destino = NULL;
+
+    for (int i = 0; i < cantidadUsuarios; i++) {
+        if (usuarios[i].no_cuenta == cuenta_origen) {
+            origen = &usuarios[i];
+        }
+        if (usuarios[i].no_cuenta == cuenta_destino) {
+            destino = &usuarios[i];
+        }
+    }
+
+    if (origen == NULL) {
+        printf("\nNúmero de cuenta de origen %d no encontrado.\n", cuenta_origen);
+        return CUENTA_INEXISTENTE;
+    }
+
+    if (destino == NULL) {
+        printf("\nNúmero de cuenta de destino %d no encontrado.\n", cuenta_destino);
+        return CUENTA_INEXISTENTE;
+    }
+
+    if (origen->saldo >= monto) {
+        origen->saldo -= monto;
+        destino->saldo += monto;
+        printf("\nTransferencia realizada. Nuevo saldo de la cuenta de origen: %.2f, cuenta de destino: %.2f\n\n", origen->saldo, destino->saldo);
+    } else {
+        printf("\nSaldo insuficiente en la cuenta de origen.\n");
+        return SALDO_INSUFICIENTE;
+    }
+
     return EXITO;
-    // int cuenta_origen, cuenta_destino;
-    // double monto;
-
-    // printf("\n\nIngrese el número de cuenta de origen: ");
-    // scanf("%d", &cuenta_origen);
-    // printf("\n\nIngrese el número de cuenta de destino: ");
-    // scanf("%d", &cuenta_destino);
-    // printf("\n\nIngrese el monto a transferir: ");
-    // scanf("%lf", &monto);
-
-    // if (monto <= 0)
-    // {
-    //     printf("\nEl monto debe ser mayor a 0.\n");
-    //     return;
-    // }
-
-    // Usuario *origen = NULL;
-    // Usuario *destino = NULL;
-
-    // for (int i = 0; i < numUsuarios; i++) {
-    //     if (usuarios[i].no_cuenta == cuenta_origen) {
-    //         origen = &usuarios[i];
-    //     }
-    //     if (usuarios[i].no_cuenta == cuenta_destino) {
-    //         destino = &usuarios[i];
-    //     }
-    // }
-
-    // if (origen == NULL) {
-    //     printf("\nNúmero de cuenta de origen no encontrado.\n");
-    //     return;
-    // }
-
-    // if (destino == NULL) {
-    //     printf("\nNúmero de cuenta de destino no encontrado.\n");
-    //     return;
-    // }
-
-    // if (origen->saldo >= monto) {
-    //     origen->saldo -= monto;
-    //     destino->saldo += monto;
-    //     printf("\nTransferencia realizada. Nuevo saldo de la cuenta de origen: %.2f, cuenta de destino: %.2f\n\n", origen->saldo, destino->saldo);
-    // } else {
-    //     printf("\nSaldo insuficiente en la cuenta de origen.\n");
-    // }
 }
 
 int consultarCuenta(Usuario *usuarios, int cantidadUsuarios)
