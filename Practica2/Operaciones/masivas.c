@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <pthread.h>
-#include <stdbool.h>
 
 extern Usuario *usuarios;
 extern int cantidadUsuarios;
@@ -256,12 +255,39 @@ void *lecturaArchivoOperaciones(void *arg)
     for (int i = indice_inicio; i < indice_final; i++)
     {
         pthread_mutex_lock(&lock);
-        cJSON *item = cJSON_GetArrayItem(json, i);
-        // cJSON_GetObjectItem(item, "operacion")->valueint;
-        // cJSON_GetObjectItem(item, "cuenta1")->valueint;
-        // cJSON_GetObjectItem(item, "cuenta2")->valueint;
-        // cJSON_GetObjectItem(item, "monto")->valuedouble;
         (*cantidadDatosLeidos)++;
+        cJSON *item = cJSON_GetArrayItem(json, i);
+        cJSON *operacion = cJSON_GetObjectItem(item, "operacion");
+        cJSON *cuenta1 = cJSON_GetObjectItem(item, "cuenta1");
+        cJSON *cuenta2 = cJSON_GetObjectItem(item, "cuenta2");
+        cJSON *monto = cJSON_GetObjectItem(item, "monto");
+        bool respuesta = validarOperacion(i, operacion, cuenta1, cuenta2, monto);
+        if (respuesta)
+        {
+            int operacion = cJSON_GetObjectItem(item, "operacion")->valueint;
+            int aux_cuenta_1 = cJSON_GetObjectItem(item, "cuenta1")->valueint;
+            int aux_cuenta_2 = cJSON_GetObjectItem(item, "cuenta2")->valueint;
+            double monto = cJSON_GetObjectItem(item, "monto")->valuedouble;
+            int res_operacion = 0;
+
+            if (operacion == 1)
+            {
+                res_operacion = deposito(aux_cuenta_1, monto);
+            }
+            else if (operacion == 2)
+            {
+                res_operacion = retiro(aux_cuenta_1, monto);
+            }
+            else if (operacion == 3)
+            {
+                res_operacion = transaccion(aux_cuenta_1, aux_cuenta_2, monto);
+            }
+            if (res_operacion != 0)
+            {
+                char *resMensajeOperacion = obtenerMensajeOperacion(res_operacion);
+                sprintf(errores[i].descripcion, "  - Estructura #%d: %s", (i + 1), resMensajeOperacion);
+            }
+        }
         pthread_mutex_unlock(&lock);
     }
 
@@ -388,14 +414,22 @@ void validarUsuario(int fila, cJSON *numCuenta, cJSON *nombre, cJSON *saldo)
     // Se verifica si el numero de cuenta es entero
     if (numCuenta != NULL && cJSON_IsNumber(numCuenta))
     {
-        // Se verifica si el numero de cuenta ya existe
-        for (int i = 0; i < cantidadUsuarios; i++)
+        if (numCuenta == 0)
         {
-            if (usuarios[i].no_cuenta == numCuenta->valueint)
+            sprintf(errores[fila].descripcion, "  - Estructura #%d: Numero de cuenta no valida.", (fila + 1));
+            exito = false;
+        }
+        else
+        {
+            // Se verifica si el numero de cuenta ya existe
+            for (int i = 0; i < cantidadUsuarios; i++)
             {
-                sprintf(errores[fila].descripcion, "  - Estructura #%d: Numero de cuenta duplicada.", (fila + 1));
-                exito = false;
-                break;
+                if (usuarios[i].no_cuenta == numCuenta->valueint)
+                {
+                    sprintf(errores[fila].descripcion, "  - Estructura #%d: Numero de cuenta duplicada.", (fila + 1));
+                    exito = false;
+                    break;
+                }
             }
         }
     }
@@ -438,4 +472,48 @@ void validarUsuario(int fila, cJSON *numCuenta, cJSON *nombre, cJSON *saldo)
     {
         usuarios[fila].no_cuenta = -1;
     }
+}
+
+bool validarOperacion(int fila, cJSON *operacion, cJSON *numCuentaOrigen, cJSON *numCuentaDestino, cJSON *monto)
+{
+    bool exito = true;
+
+    // Se verifica que la operacion sea entera
+    if (operacion != NULL && cJSON_IsNumber(operacion))
+    {
+        // Se verifica que el tipo de operacion sea 1, 2 o 3
+        if (!(operacion->valueint == 1 || operacion->valueint == 2 || operacion->valueint == 3))
+        {
+            sprintf(errores[fila].descripcion, "  - Estructura #%d: Código de operación desconocido.", (fila + 1));
+            exito = false;
+        }
+    }
+    else
+    {
+        sprintf(errores[fila].descripcion, "  - Estructura #%d: La operación no es válida.", (fila + 1));
+        exito = false;
+    }
+
+    // Se verifica si el numero de cuenta de origen es entero
+    if (!(numCuentaOrigen != NULL && cJSON_IsNumber(numCuentaOrigen)))
+    {
+        sprintf(errores[fila].descripcion, "  - Estructura #%d: Numero de cuenta 1 no valida.", (fila + 1));
+        exito = false;
+    }
+
+    // Se verifica si el numero de cuenta de destino es entero
+    if (!(numCuentaDestino != NULL && cJSON_IsNumber(numCuentaDestino)))
+    {
+        sprintf(errores[fila].descripcion, "  - Estructura #%d: Numero de cuenta 2 no valida.", (fila + 1));
+        exito = false;
+    }
+
+    // Se verifica si el monto es double
+    if (!(monto != NULL && cJSON_IsNumber(monto)))
+    {
+        sprintf(errores[fila].descripcion, "  - Estructura #%d: El monto ingresado no es un número válido.", (fila + 1));
+        exito = false;
+    }
+
+    return exito;
 }

@@ -1,10 +1,14 @@
 #include "individuales.h"
+#include <string.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include "../Estructuras/constantes.h"
 
-void menuOperacionIndividual(Usuario *usuarios, int cantidadUsuarios)
+extern Usuario *usuarios;
+extern int cantidadUsuarios;
+
+void menuOperacionIndividual()
 {
     int tipoOperacion;
     do
@@ -23,204 +27,256 @@ void menuOperacionIndividual(Usuario *usuarios, int cantidadUsuarios)
         switch (tipoOperacion)
         {
         case 1:
-            resultado = deposito(usuarios, cantidadUsuarios);
-            imprimirMensajeOperacion(resultado);
+        {
+            char input[100];
+            int no_cuenta;
+            double monto;
+
+            // Solicitar número de cuenta
+            printf("Ingrese el número de cuenta: ");
+            scanf("%s", input);
+            // Se valida la entrada
+            if (esEntero(input))
+            {
+                no_cuenta = atoi(input);
+            }
+            else
+            {
+                printf("La cuenta ingresada no es un número válido.\n");
+                break;
+            }
+
+            // Solicitar monto
+            printf("Ingrese el monto a depositar: ");
+            scanf("%s", input);
+            // Se valida la entrada
+            if (esFlotante(input))
+            {
+                monto = atof(input);
+            }
+            else
+            {
+                printf("El monto ingresado no es un número válido.\n");
+                break;
+            }
+
+            // Realizar procedimiento
+            resultado = deposito(no_cuenta, monto);
+            char *resMensajeOperacion = obtenerMensajeOperacion(resultado);
+            printf("%s", resMensajeOperacion);
             break;
+        }
         case 2:
-            resultado = retiro(usuarios, cantidadUsuarios);
-            imprimirMensajeOperacion(resultado);
+        {
+            char input[100];
+            int no_cuenta;
+            double monto;
+
+            // Solicitar número de cuenta
+            printf("Ingrese el número de cuenta: ");
+            scanf("%s", input);
+            // Se valida la entrada
+            if (esEntero(input))
+            {
+                no_cuenta = atoi(input);
+            }
+            else
+            {
+                printf("La cuenta ingresada no es un número válido.\n");
+                break;
+            }
+
+            // Solicitar monto
+            printf("Ingrese el monto a depositar: ");
+            scanf("%s", input);
+            // Se valida la entrada
+            if (esFlotante(input))
+            {
+                monto = atof(input);
+            }
+            else
+            {
+                printf("El monto ingresado no es un número válido.\n");
+                break;
+            }
+
+            resultado = retiro(no_cuenta, monto);
+            char *resMensajeOperacion = obtenerMensajeOperacion(resultado);
+            printf("%s", resMensajeOperacion);
             break;
+        }
         case 3:
-            resultado = transaccion(usuarios, cantidadUsuarios);
-            imprimirMensajeOperacion(resultado);
+        {
+            char input[100];
+            int cuenta_origen, cuenta_destino;
+            double monto;
+
+            // Solicitar el número de cuenta de origen
+            printf("Ingrese el número de cuenta de origen: ");
+            scanf("%s", input);
+            // Se valida la entrada
+            if (esEntero(input))
+            {
+                cuenta_origen = atoi(input);
+            }
+            else
+            {
+                printf("La cuenta ingresada no es un número válido.\n");
+                break;
+            }
+
+            // Solicitar el número de cuenta de destino
+            printf("Ingrese el número de cuenta de destino: ");
+            scanf("%s", input);
+            // Se valida la entrada
+            if (esEntero(input))
+            {
+                cuenta_destino = atoi(input);
+            }
+            else
+            {
+                printf("La cuenta ingresada no es un número válido.\n");
+                break;
+            }
+
+            // Solicitar el monto a transferir
+            printf("Ingrese el monto a transferir: ");
+            scanf("%s", input);
+            // Se valida la entrada
+            if (esFlotante(input))
+            {
+                monto = atof(input);
+            }
+            else
+            {
+                printf("El monto ingresado no es un número válido.\n");
+                break;
+            }
+            resultado = transaccion(cuenta_origen, cuenta_destino, monto);
+            char *resMensajeOperacion = obtenerMensajeOperacion(resultado);
+            printf("%s", resMensajeOperacion);
             break;
+        }
         case 4:
-            resultado = consultarCuenta(usuarios, cantidadUsuarios);
-            imprimirMensajeOperacion(resultado);
+        {
+            char input[100];
+            int no_cuenta;
+
+            // Solicitar número de cuenta
+            printf("Ingrese el número de cuenta: ");
+            scanf("%s", input);
+            // Se valida la entrada
+            if (esEntero(input))
+            {
+                no_cuenta = atoi(input);
+            }
+            else
+            {
+                printf("La cuenta ingresada no es un número válido.\n");
+                break;
+            }
+
+            resultado = consultarCuenta(no_cuenta);
+            char *resMensajeOperacion = obtenerMensajeOperacion(resultado);
+            printf("%s", resMensajeOperacion);
             break;
-        case 5:
-            printf("\n");
-            break;
+        }
         default:
-            printf("\nOpción no válida. Intente de nuevo.\n");
+            printf("Opción no válida. Intente de nuevo.\n");
         }
     } while (tipoOperacion != 5);
 }
 
-int deposito(Usuario *usuarios, int cantidadUsuarios)
+int deposito(int no_cuenta, double monto)
 {
-    char input[100];
-    int no_cuenta;
-    double monto;
-
-    // Solicitar número de cuenta
-    printf("\nIngrese el número de cuenta: ");
-    scanf("%s", input);
-    
-    if (esEntero(input)) {
-        no_cuenta = atoi(input);
-        printf("Formato de número de cuenta válido: %d\n", no_cuenta);
-    } else {
-        return OPERACION_NO_VALIDA;
-    }
-
-    // Solicitar monto
-    printf("\nIngrese el monto a depositar: ");
-    scanf("%s", input);
-
-    if (esFlotante(input)) {
-        monto = atof(input);
-    } else {
-        return MONTO_NO_ES_NUMERO;
-    }
-
-    if (monto <= 0) {
+    if (monto <= 0)
+    {
         return MONTO_ES_MENOR_A_0;
     }
 
-    for (int i = 0; i < cantidadUsuarios; i++) {
-        if (usuarios[i].no_cuenta == no_cuenta) {
+    for (int i = 0; i < cantidadUsuarios; i++)
+    {
+        if (usuarios[i].no_cuenta == no_cuenta)
+        {
             usuarios[i].saldo += monto;
-            printf("\nDepósito realizado. Nuevo saldo: %.2f\n\n", usuarios[i].saldo);
             return EXITO;
         }
     }
     return CUENTA_INEXISTENTE;
 }
 
-int retiro(Usuario *usuarios, int cantidadUsuarios)
-{   
-    char input[100];
-    int no_cuenta;
-    double monto;
-
-    // Solicitar número de cuenta
-    printf("\nIngrese el número de cuenta: ");
-    scanf("%s", input);
-    
-    if (esEntero(input)) {
-        no_cuenta = atoi(input);
-        printf("Formato de número de cuenta válido: %d\n", no_cuenta);
-    } else {
-        return OPERACION_NO_VALIDA;
-    }
-
-    // Solicitar monto
-    printf("\nIngrese el monto a retirar: ");
-    scanf("%s", input);
-
-    if (esFlotante(input)) {
-        monto = atof(input);
-    } else {
-        return MONTO_NO_ES_NUMERO;
-    }
-
-    if (monto <= 0) {
+int retiro(int no_cuenta, double monto)
+{
+    if (monto <= 0)
+    {
         return MONTO_ES_MENOR_A_0;
     }
 
-    for (int i = 0; i < cantidadUsuarios; i++) {
-        if (usuarios[i].no_cuenta == no_cuenta) {
-            if (usuarios[i].saldo < monto) {
+    for (int i = 0; i < cantidadUsuarios; i++)
+    {
+        if (usuarios[i].no_cuenta == no_cuenta)
+        {
+            if (usuarios[i].saldo < monto)
+            {
                 return SALDO_INSUFICIENTE;
             }
             usuarios[i].saldo -= monto;
-            printf("\nRetiro realizado. Nuevo saldo: %.2f\n\n", usuarios[i].saldo);
             return EXITO;
         }
     }
     return CUENTA_INEXISTENTE;
 }
 
-int transaccion(Usuario *usuarios, int cantidadUsuarios)
+int transaccion(int no_cuenta_origen, int no_cuenta_destino, double monto)
 {
-    char input[100]; // Buffer para leer las entradas del usuario
-    int cuenta_origen, cuenta_destino;
-    double monto;
-
-    // Solicitar el número de cuenta de origen
-    printf("\n\nIngrese el número de cuenta de origen: ");
-    scanf("%s", input);
-
-    if (esEntero(input)) {
-        cuenta_origen = atoi(input);
-        printf("Formato de número de cuenta válido: %d\n", cuenta_origen);
-    } else {
-        return OPERACION_NO_VALIDA;
-    }
-
-    // Solicitar el número de cuenta de destino
-    printf("\n\nIngrese el número de cuenta de destino: ");
-    scanf("%s", input);
-
-    if (esEntero(input)) {
-        cuenta_destino = atoi(input);
-        printf("Formato de número de cuenta válido: %d\n", cuenta_destino);
-    } else {
-        return OPERACION_NO_VALIDA;
-    }
-
-    // Solicitar el monto a transferir
-    printf("\n\nIngrese el monto a transferir: ");
-    scanf("%s", input);
-
-    if (esFlotante(input)) {
-        monto = atof(input);
-        if (monto <= 0) {
-            return MONTO_ES_MENOR_A_0;
-        }
-    } else {
-        return MONTO_NO_ES_NUMERO;
-    }
-
     Usuario *origen = NULL;
     Usuario *destino = NULL;
 
-    for (int i = 0; i < cantidadUsuarios; i++) {
-        if (usuarios[i].no_cuenta == cuenta_origen) {
+    for (int i = 0; i < cantidadUsuarios; i++)
+    {
+        if (usuarios[i].no_cuenta == no_cuenta_origen)
+        {
             origen = &usuarios[i];
         }
-        if (usuarios[i].no_cuenta == cuenta_destino) {
+        if (usuarios[i].no_cuenta == no_cuenta_destino)
+        {
             destino = &usuarios[i];
         }
     }
 
-    if (origen == NULL) {
+    if (origen == NULL)
+    {
         return CUENTA_INEXISTENTE;
     }
 
-    if (destino == NULL) {
+    if (destino == NULL)
+    {
         return CUENTA_INEXISTENTE;
     }
 
-    if (origen->saldo >= monto) {
+    if (monto <= 0)
+    {
+        return MONTO_ES_MENOR_A_0;
+    }
+
+    if (origen->saldo >= monto)
+    {
         origen->saldo -= monto;
         destino->saldo += monto;
-        printf("\nTransferencia realizada. Nuevo saldo de la cuenta de origen: %.2f, cuenta de destino: %.2f\n\n", origen->saldo, destino->saldo);
         return EXITO;
-    } else {
+    }
+    else
+    {
         return SALDO_INSUFICIENTE;
     }
 }
 
-int consultarCuenta(Usuario *usuarios, int cantidadUsuarios)
+int consultarCuenta(int no_cuenta)
 {
-    char input[100];
-    int no_cuenta;
-
-    // Solicitar número de cuenta
-    printf("\nIngrese el número de cuenta: ");
-    scanf("%s", input);
-    
-    if (esEntero(input)) {
-        no_cuenta = atoi(input);
-        printf("Formato de número de cuenta válido: %d\n", no_cuenta);
-    } else {
-        return OPERACION_NO_VALIDA;
-    }
-
-    for (int i = 0; i < cantidadUsuarios; i++) {
-        if (usuarios[i].no_cuenta == no_cuenta) {
+    for (int i = 0; i < cantidadUsuarios; i++)
+    {
+        if (usuarios[i].no_cuenta == no_cuenta)
+        {
             printf("\nNúmero de cuenta: %d\n", usuarios[i].no_cuenta);
             printf("Nombre: %s\n", usuarios[i].nombre);
             printf("Saldo: %.2f\n\n", usuarios[i].saldo);
@@ -231,29 +287,42 @@ int consultarCuenta(Usuario *usuarios, int cantidadUsuarios)
 }
 
 // Implementación de la función para verificar si una cadena es un número entero positivo
-int esEntero(const char *cadena) {
-    if (*cadena == '-') return 0; // Rechazar si empieza con un signo negativo
-    if (*cadena == '\0') return 0; // Cadena vacía no es un número válido
+int esEntero(const char *cadena)
+{
+    if (*cadena == '-')
+        return 0; // Rechazar si empieza con un signo negativo
+    if (*cadena == '\0')
+        return 0; // Cadena vacía no es un número válido
 
-    while (*cadena) {
-        if (!isdigit(*cadena)) return 0;
+    while (*cadena)
+    {
+        if (!isdigit(*cadena))
+            return 0;
         cadena++;
     }
     return 1;
 }
 
 // Implementación de la función para verificar si una cadena es un número flotante positivo
-int esFlotante(const char *cadena) {
+int esFlotante(const char *cadena)
+{
     int puntoEncontrado = 0;
 
-    if (*cadena == '-') return 0; // Rechazar si empieza con un signo negativo
-    if (*cadena == '\0') return 0; // Cadena vacía no es un número válido
+    if (*cadena == '-')
+        return 0; // Rechazar si empieza con un signo negativo
+    if (*cadena == '\0')
+        return 0; // Cadena vacía no es un número válido
 
-    while (*cadena) {
-        if (*cadena == '.') {
-            if (puntoEncontrado) return 0; // Más de un punto no es válido
+    while (*cadena)
+    {
+        if (*cadena == '.')
+        {
+            if (puntoEncontrado)
+                return 0; // Más de un punto no es válido
             puntoEncontrado = 1;
-        } else if (!isdigit(*cadena)) {
+        }
+        else if (!isdigit(*cadena))
+        {
             return 0;
         }
         cadena++;
@@ -261,29 +330,74 @@ int esFlotante(const char *cadena) {
     return 1;
 }
 
-// Función para imprimir el mensaje correspondiente al código de retorno
-void imprimirMensajeOperacion(int codigo) {
-    switch (codigo) {
-        case 0:
-            printf("\nOperación realizada con éxito.\n");
-            break;
-        case 1:
-            printf("\nEl número de cuenta no existe.\n");
-            break;
-        case 2:
-            printf("\nEl monto ingresado no es un número válido.\n");
-            break;
-        case 3:
-            printf("\nEl monto ingresado debe ser mayor a 0.\n");
-            break;
-        case 4:
-            printf("\nEl saldo de la cuenta no es suficiente para realizar la operación.\n");
-            break;
-        case 5:
-            printf("\nLa operación no es válida.\n");
-            break;
-        default:
-            printf("\nCódigo de operación desconocido.\n");
-            break;
+// Función que devuelve un mensaje basado en un código
+char *obtenerMensajeOperacion(int codigo)
+{
+    char *mensaje = NULL;
+
+    switch (codigo)
+    {
+    case EXITO:
+    {
+        const char *texto = "Operación realizada con éxito.";
+        mensaje = (char *)malloc(strlen(texto) + 1);
+        if (mensaje != NULL)
+        {
+            strcpy(mensaje, texto);
+        }
+        break;
     }
+    case CUENTA_INEXISTENTE:
+    {
+        const char *texto = "El número de cuenta no existe.";
+        mensaje = (char *)malloc(strlen(texto) + 1);
+        if (mensaje != NULL)
+        {
+            strcpy(mensaje, texto);
+        }
+        break;
+    }
+    case MONTO_ES_MENOR_A_0:
+    {
+        const char *texto = "El monto ingresado debe ser mayor a 0.";
+        mensaje = (char *)malloc(strlen(texto) + 1);
+        if (mensaje != NULL)
+        {
+            strcpy(mensaje, texto);
+        }
+        break;
+    }
+    case SALDO_INSUFICIENTE:
+    {
+        const char *texto = "El saldo de la cuenta no es suficiente para realizar la operación.";
+        mensaje = (char *)malloc(strlen(texto) + 1);
+        if (mensaje != NULL)
+        {
+            strcpy(mensaje, texto);
+        }
+        break;
+    }
+    case OPERACION_NO_VALIDA:
+    {
+        const char *texto = "La operación no es válida.";
+        mensaje = (char *)malloc(strlen(texto) + 1);
+        if (mensaje != NULL)
+        {
+            strcpy(mensaje, texto);
+        }
+        break;
+    }
+    default:
+    {
+        const char *texto = "Código de operación desconocido.";
+        mensaje = (char *)malloc(strlen(texto) + 1);
+        if (mensaje != NULL)
+        {
+            strcpy(mensaje, texto);
+        }
+        break;
+    }
+    }
+
+    return mensaje;
 }
