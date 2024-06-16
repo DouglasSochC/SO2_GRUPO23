@@ -19,5 +19,6 @@ int esEntero(const char *cadena);
 // Función para verificar si una cadena es un número flotante.
 // Retorna 1 si la cadena representa un número flotante válido, de lo contrario retorna 0.
 int esFlotante(const char *cadena);
+void imprimirMensajeOperacion(int codigo);
 
 #endif // INDIVIDUALES_H
