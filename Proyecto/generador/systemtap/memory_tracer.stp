@@ -1,0 +1,24 @@
+#!/usr/bin/stap
+
+# memory_tracer.stp
+
+# Archivo de log global
+global log_file = "../logs/memory_tracer.log"
+
+
+# Probe para mmap2
+probe syscall.mmap2 {
+    printf("%s | PID: %d | mmap() | addr: %p | length: %lu | prot: %d | flags: %d | fd: %d | offset: %lu\n",
+           ctime(gettimeofday_s() - 21600), pid(), user_ulong(1), user_ulong(2), user_int(3), user_int(4), user_int(5), user_ulong(6)) >> log_file
+}
+
+# Probe para munmap
+probe syscall.munmap {
+    printf("%s | PID: %d | munmap() | addr: %p | length: %lu\n",
+           ctime(gettimeofday_s() - 21600), pid(), user_ulong(1), user_ulong(2)) >> log_file
+}
+
+# Guardar la información en el archivo de log al final de la ejecución
+probe end {
+    system("mv ../logs/memory_tracer.log ../logs/memory_tracer_$(date +'%Y%m%d_%H%M%S').log")
+}

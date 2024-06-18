@@ -1,0 +1,69 @@
+version: '3'
+
+services:
+
+  database:
+    build:
+      context: ./database
+    image: carlosmz87/so2_p1_database:latest
+    container_name: so2_p1_database_container
+    volumes:
+      - so2_p1_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - so2_p1_network
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+
+  backend:
+    build:
+      context: ./backend
+    image: carlosmz87/so2_p1_backend:latest
+    container_name: so2_p1_backend_container
+    ports:
+      - "3000:3000"
+    depends_on:
+      - database
+    networks:
+      - so2_p1_network
+    restart: always
+    privileged: true
+    pid: host
+    volumes:
+      - /proc:/proc
+    environment:
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - PORT=${PORT}
+    links:
+      - database
+
+  frontend:
+    build:
+      context: ./frontend
+    image: carlosmz87/so2_p1_frontend:latest
+    container_name: so2_p1_frontend_container
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - so2_p1_network
+    environment:
+      - NODE_ENV=${NODE_ENV}
+    links:
+      - backend
+
+volumes:
+  so2_p1_data:
+
+networks:
+  so2_p1_network:
