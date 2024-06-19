@@ -3,7 +3,7 @@ FROM mysql:latest
 
 
 # Copiamos el script de inicialización a la carpeta de entrada del contenedor
-COPY ./database-init.sql /docker-entrypoint-initdb.d/
+COPY ./db_init.sql /docker-entrypoint-initdb.d/
 
 # Exponemos el puerto por defecto de MySQL
 EXPOSE 3306
