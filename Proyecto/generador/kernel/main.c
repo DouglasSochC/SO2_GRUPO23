@@ -20,30 +20,12 @@ void create_log_file() {
 // Función para ejecutar el script de SystemTap
 void execute_systemtap_script() {
     char command[256];
-    snprintf(command, sizeof(command), "sudo stap -g %s", SYSTEMTAP_SCRIPT);
-
-    // Usar fork para crear un proceso hijo
-    pid_t pid = fork();
-
-    if (pid == -1) {
-        perror("Error al crear proceso hijo");
-        exit(EXIT_FAILURE);
-    } else if (pid == 0) {
-        printf("Proceso hijo creado exitosamente...\n");
-        // Código del proceso hijo: ejecutar el script de SystemTap
-        execl("/bin/sh", "sh", "-c", command, (char *) NULL);
-        // Si execl falla
-        perror("Error al ejecutar el script de SystemTap");
-        exit(EXIT_FAILURE);
+    snprintf(command, sizeof(command), "sudo stap %s > %s", SYSTEMTAP_SCRIPT, LOG_FILE);
+    int status = system(command);
+    if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+        printf("El script de SystemTap se ejecutó correctamente.\n");
     } else {
-        // Código del proceso padre: esperar a que el hijo termine
-        int status;
-        waitpid(pid, &status, 0);
-        if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
-            printf("El script de SystemTap se ejecutó correctamente.\n");
-        } else {
-            fprintf(stderr, "El script de SystemTap falló con estado %d.\n", WEXITSTATUS(status));
-        }
+        fprintf(stderr, "El script de SystemTap falló con estado %d.\n", WEXITSTATUS(status));
     }
 }
 
