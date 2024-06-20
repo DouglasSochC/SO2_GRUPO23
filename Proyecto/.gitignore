@@ -1,3 +1,4 @@
 .env
 logs**
 /generador/kernel/main
+/generador/reader/reader

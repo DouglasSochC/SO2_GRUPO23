@@ -8,5 +8,5 @@ probe syscall.mmap2 {
 
 probe syscall.munmap {
     printf("Timestamp: %s, PID: %d, Process: %s, Syscall: munmap, Size: %lu\n",
-           ctime(gettimeofday_s()), pid(), execname(), length);
+           ctime(gettimeofday_s()), pid(), execname(), length);   
 }
