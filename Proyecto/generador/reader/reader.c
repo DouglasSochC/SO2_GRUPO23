@@ -5,7 +5,7 @@
 #include <mysql/mysql.h>
 
 #define LOG_FILE "../logs/memory_tracer.log"
-#define DB_HOST "172.17.0.1" // Cambia esto por la IP del contenedor MySQL
+#define DB_HOST "172.19.0.2" // Cambia esto por la IP del contenedor MySQL
 #define DB_USER "proyecto1"
 #define DB_PASS "proyecto1"
 #define DB_NAME "proceso_db"
