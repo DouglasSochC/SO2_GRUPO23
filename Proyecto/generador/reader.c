@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #define PATH_SCRIPT "systemtap/memory_tracer.stp"
 
@@ -81,7 +82,14 @@ void execute_systemtap_script()
             // Setear el timestamp
             if (acum == 0)
             {
-                sprintf(timestamp, "%s", token);
+                // Obtener la fecha y hora actuales
+                time_t t = time(NULL);
+                struct tm tm = *localtime(&t);
+
+                // Formatear la fecha y hora en el estilo "YYYY-mm-dd HH:mm:ss"
+                char buffer[20];
+                strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &tm);
+                sprintf(timestamp, "%s", buffer);
             }
             // Setear el PID
             if (acum == 1)
