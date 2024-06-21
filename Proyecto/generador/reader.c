@@ -22,13 +22,13 @@ void execute_systemtap_script()
     MYSQL *conn;
 
     int DB_PORT_INT = -1;
-    if (DB_PORT != NULL)
+    if (DB_HOST != NULL && DB_PORT != NULL && DB_USER != NULL && DB_PASS != NULL && DB_NAME != NULL)
     {
         DB_PORT_INT = atoi(DB_PORT);
     }
     else
     {
-        printf("DB_PORT is not set\n");
+        printf("ERROR: No se han cargado todas las variables de entorno necesarias para realizar la conexion a la base de datos\n");
         return;
     }
 
