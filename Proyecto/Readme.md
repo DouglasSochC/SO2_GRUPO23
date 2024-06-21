@@ -1,15 +1,42 @@
-#   Para compilar Systemtap
+# Manejo de memoria
 
-Usar el comando: sudo stap -v -DDEBUG memory_tracer.stp
+_Este es un proyecto universitario del curso de Sistemas Operativos 2, en el cual se creara una aplicación capaz de monitorear el uso de memoria de cada proceso abierto en Linux, detectando las solicitudes de memoria que estos realizan al sistema operativo._
 
-#   Para instalar la libreria del cliente de Mysql 
+## 🚀 Comenzando
 
-Usar los comandos:
+### 📋 Requerimientos
 
--   sudo apt update
--   sudo apt install libmysqlclient-dev
+* [GCC 11.4.0](https://phoenixnap.com/kb/install-gcc-ubuntu)
+```console
+gcc --version
+```
 
-#   Para compilar el archivo reader.c
+#### Adicionales
 
-Usar el comando: gcc -o reader reader.c -lmysqlclient
+* Libreria del cliente MySQL para C
+
+```console
+sudo apt update
+sudo apt install libmysqlclient-dev
+```
+
+### ⚙️ Ejecucion
+
+#### Generador
+
+Para ejecutar el generador, primero es necesario definir su archivo .env. Una vez creado el archivo .env, ejecute los siguientes comandos.
+
+* Cargar las variables de entorno
+
+    ```console
+    source .env
+    ```
+
+* Compilar y ejecutar el generador
+
+    ```console
+    make all
+    ```
+
+## 📖 Documentacion
 
