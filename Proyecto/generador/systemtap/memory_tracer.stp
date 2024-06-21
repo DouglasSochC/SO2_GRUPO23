@@ -1,11 +1,12 @@
 // memory_tracer.stp
+// Orden de los datos obtenidos: Timestamp, PID, Process, Syscall, Size
 
 probe syscall.mmap2 {
-    printf("Timestamp: %s, PID: %d, Process: %s, Syscall: mmap2, Size: %lu\n",
+    printf("%s,%d,%s,mmap2,%lu\n",
            ctime(gettimeofday_s()), pid(), execname(), length);
 }
 
 probe syscall.munmap {
-    printf("Timestamp: %s, PID: %d, Process: %s, Syscall: munmap, Size: %lu\n",
+    printf("%s,%d,%s,munmap,%lu\n",
            ctime(gettimeofday_s()), pid(), execname(), length);
 }

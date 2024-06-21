@@ -49,7 +49,6 @@ void execute_systemtap_script()
         exit(1);
     }
 
-    // insertarRegistro(conn, "time", 123, "abc", "syscall", 1000);
     // Comando para obtener la informacion del trace
     sprintf(command, "sudo stap %s", PATH_SCRIPT);
 
@@ -64,14 +63,51 @@ void execute_systemtap_script()
     // Leer la salida del comando
     while (fgets(buffer, sizeof(buffer), fp) != NULL)
     {
-        // Obtener el primer caracter
-        primer_caracter = buffer[0];
-        printf("%d", primer_caracter);
-        printf("%s", &buffer[1]);
+        // Atributos
+        char timestamp[64], process[64], syscall_name[64];
+        int pid, size;
+        int acum = 0;
 
-        // // Almacenando el log
-        // fprintf(log_fp, "%s", &buffer[1]);
-        // printf("%s", &buffer[1]);
+        // Auxiliares
+        char delimitador[] = ",";
+        char *token;
+
+        // Obtener el primer token
+        token = strtok(buffer, delimitador);
+
+        // Recorrer el resto de los tokens
+        while (token != NULL)
+        {
+            // Setear el timestamp
+            if (acum == 0)
+            {
+                sprintf(timestamp, "%s", token);
+            }
+            // Setear el PID
+            if (acum == 1)
+            {
+                pid = atoi(token);
+            }
+            // Setear el Process
+            else if (acum == 2)
+            {
+                sprintf(process, "%s", token);
+            }
+            // Setear el Syscall
+            else if (acum == 3)
+            {
+                sprintf(syscall_name, "%s", token);
+            }
+            // Setear el Size
+            else if (acum == 4)
+            {
+                size = atoi(token);
+            }
+            acum++;
+            token = strtok(NULL, delimitador);
+        }
+
+        insertarRegistro(conn, timestamp, pid, process, syscall_name, size);
     }
 
     // Se verifica si hubo un error al cerrar el comando
