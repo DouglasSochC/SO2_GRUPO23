@@ -1,3 +1,4 @@
 .env
 logs**
 /generador/main
+/generador/.env

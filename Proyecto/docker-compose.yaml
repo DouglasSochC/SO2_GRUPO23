@@ -58,7 +58,7 @@ services:
     networks:
       - so2_p1_network
     environment:
-      - NODE_ENV=${NODE_ENV}
+      - REACT_APP_API_URL=${REACT_APP_API_URL}
     links:
       - backend
 
