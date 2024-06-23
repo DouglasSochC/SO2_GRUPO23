@@ -4,11 +4,11 @@ import 'chart.js/auto';
 import './App.css';
 
 function App() {
-  const [data, setData] = useState([]);
+  const [procesosData, setProcesosData] = useState([]);
+  const [memoryData, setMemoryData] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [totalMemory, setTotalMemory] = useState(0);
 
   const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -30,32 +30,25 @@ function App() {
 
   const fetchData = useCallback(async () => {
     try {
-      console.log(`Fetching data from ${apiUrl}/procesos`); // Depuración
-      const response = await fetch(`${apiUrl}/procesos`);
-      const text = await response.text();
-      console.log('Response text:', text); // Depuración
+      console.log(`Fetching data from ${apiUrl}/memory`); // Debugging
+      const responseMemory = await fetch(`${apiUrl}/memory`);
+      const memoryData = await responseMemory.json();
 
-      if (response.ok) {
-        // Intenta analizar el texto como JSON
-        try {
-          const result = JSON.parse(text);
-          const groupedData = groupAndCalculateMemoryUsage(result);
-          setData(groupedData);
-          const totalMemory = groupedData.reduce((sum, group) => sum + group.total_memory, 0);
-          setTotalMemory(totalMemory);
-          setIsLoading(false);
-        } catch (jsonError) {
-          setError('Failed to parse JSON');
-          console.error('Failed to parse JSON:', jsonError);
-          console.log('Response text was:', text);
-        }
+      console.log(`Fetching data from ${apiUrl}/procesos`); // Debugging
+      const responseProcesos = await fetch(`${apiUrl}/procesos`);
+      const procesosData = await responseProcesos.json();
+
+      if (responseMemory.ok && responseProcesos.ok) {
+        setMemoryData(memoryData.slice(0, 10)); // Mostrar solo los primeros 10 procesos para la gráfica y la tabla
+        setProcesosData(procesosData.slice(0, 50)); // Mostrar las últimas 50 inserciones en la tabla de procesos
+        setIsLoading(false);
       } else {
-        setError('Failed to fetch data from /procesos.');
-        console.error('Failed to fetch data from /procesos.');
+        setError('Failed to fetch data from /memory or /procesos.');
+        console.error('Failed to fetch data from /memory or /procesos.');
       }
     } catch (error) {
-      setError('Error fetching data from /procesos.');
-      console.error('Error fetching data from /procesos:', error);
+      setError('Error fetching data from /memory or /procesos.');
+      console.error('Error fetching data from /memory or /procesos:', error);
     }
   }, [apiUrl]);
 
@@ -71,41 +64,10 @@ function App() {
     }
   }, [isConnected, fetchData]);
 
-  // Función para agrupar los datos por PID y nombre_proceso y calcular la memoria utilizada
-  const groupAndCalculateMemoryUsage = (data) => {
-    const grouped = {};
-
-    data.forEach((proceso) => {
-      const key = `${proceso.pid}-${proceso.nombre_proceso}`;
-      if (!grouped[key]) {
-        grouped[key] = {
-          pid: proceso.pid,
-          nombre_proceso: proceso.nombre_proceso,
-          total_memory: 0,
-          procesos: []
-        };
-      }
-
-      grouped[key].procesos.push(proceso);
-
-      // Sumar o restar memoria basada en la llamada
-      if (proceso.llamada === 'mmap2') {
-        grouped[key].total_memory += proceso.tamano_segmento;
-      } else if (proceso.llamada === 'munmap') {
-        grouped[key].total_memory -= proceso.tamano_segmento;
-      }
-
-      // Usar el valor absoluto de la memoria para evitar números negativos
-      grouped[key].total_memory = Math.abs(grouped[key].total_memory);
-    });
-
-    return Object.values(grouped);
-  };
-
-  const generateChartData = () => {
-    const labels = data.map((group) => `${group.nombre_proceso} (PID: ${group.pid})`);
-    const memoryData = data.map((group) => group.total_memory);
-    const backgroundColors = data.map(
+  const generateMemoryChartData = () => {
+    const labels = memoryData.map((memory) => memory.nombre);
+    const memoryValues = memoryData.map((memory) => parseFloat(memory.porcentaje));
+    const backgroundColors = memoryData.map(
       () => `#${Math.floor(Math.random() * 16777215).toString(16)}` // Generar colores aleatorios
     );
 
@@ -113,7 +75,7 @@ function App() {
       labels,
       datasets: [
         {
-          data: memoryData,
+          data: memoryValues,
           backgroundColor: backgroundColors,
           hoverBackgroundColor: backgroundColors,
         },
@@ -129,41 +91,58 @@ function App() {
         {error && <p style={{ color: 'red' }}>{error}</p>}
         {isConnected ? (
           <>
-            <table>
-              <thead>
-                <tr>
-                  <th>PID</th>
-                  <th>Nombre Proceso</th>
-                  <th>Memoria Utilizada (bytes)</th>
-                  <th>Porcentaje de Memoria Utilizada</th>
-                  <th>Llamadas Detalladas</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((procesoGroup) => (
-                  <tr key={`${procesoGroup.pid}-${procesoGroup.nombre_proceso}`}>
-                    <td>{procesoGroup.pid}</td>
-                    <td>{procesoGroup.nombre_proceso}</td>
-                    <td>{procesoGroup.total_memory}</td>
-                    <td>
-                      {totalMemory > 0
-                        ? `${((procesoGroup.total_memory / totalMemory) * 100).toFixed(2)}%`
-                        : '0%'}
-                    </td>
-                    <td>
-                      {procesoGroup.procesos.map((proceso, index) => (
-                        <div key={index} style={{ marginBottom: '5px' }}>
-                          <strong>{proceso.llamada}</strong>: {proceso.tamano_segmento} bytes at {proceso.fecha_hora_solicitud}
-                        </div>
-                      ))}
-                    </td>
+            <div className="table-container">
+              <h2>Uso de Memoria</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>PID</th>
+                    <th>Nombre Proceso</th>
+                    <th>Uso de Memoria (%)</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            <div style={{ width: '50%', margin: '20px auto' }}>
-              <h2>Memoria Utilizada por Proceso</h2>
-              <Pie data={generateChartData()} />
+                </thead>
+                <tbody>
+                  {memoryData.map((memory) => (
+                    <tr key={memory.pid}>
+                      <td>{memory.pid}</td>
+                      <td>{memory.nombre}</td>
+                      <td>{memory.porcentaje}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="chart-container">
+                <h2>Gráfica de Uso de Memoria</h2>
+                <Pie data={generateMemoryChartData()} />
+              </div>
+            </div>
+
+            <div className="table-container">
+              <h2>Últimas Inserciones de Procesos</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>PID</th>
+                    <th>Nombre Proceso</th>
+                    <th>Llamada</th>
+                    <th>Tamaño Segmento</th>
+                    <th>Fecha/Hora Solicitud</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {procesosData.map((proceso) => (
+                    <tr key={proceso.id}>
+                      <td>{proceso.id}</td>
+                      <td>{proceso.pid}</td>
+                      <td>{proceso.nombre_proceso}</td>
+                      <td>{proceso.llamada}</td>
+                      <td>{proceso.tamano_segmento}</td>
+                      <td>{proceso.fecha_hora_solicitud}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </>
         ) : (

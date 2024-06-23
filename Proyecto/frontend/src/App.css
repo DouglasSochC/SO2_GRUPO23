@@ -1,36 +1,100 @@
+/* Estilos generales para la aplicación */
+
 .App {
-    text-align: center;
-    font-family: Arial, sans-serif;
-  }
-  
-  .App-header {
-    background-color: #282c34;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
-  }
-  
-  table {
-    width: 80%;
-    margin: 20px auto;
-    border-collapse: collapse;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  
-  thead {
-    background-color: #007bff;
-    color: white;
-  }
-  
-  th, td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-  }
-  
+  text-align: center;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: rgb(0, 0, 0);
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.table-container {
+  margin: 20px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f0f0f0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: calc(50% - 40px); /* Ajusta el ancho de la tabla */
+}
+
+.chart-container {
+  margin: 20px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f0f0f0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: calc(50% - 40px); /* Ajusta el ancho de la gráfica */
+}
+
+/* Estilos para la tabla */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+table th {
+  background-color: #007bff;
+  color: rgb(0, 0, 0);
+  padding: 10px;
+}
+
+table td,
+table th {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+/* Estilos para la gráfica */
+
+canvas {
+  max-width: 100%;
+  height: auto;
+  margin: auto;
+  display: block;
+  width: 100%; /* Ajusta el ancho al 100% del contenedor */
+}
+
+/* Estilo para el encabezado */
+
+h1 {
+  margin-bottom: 20px;
+}
+
+h2 {
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+}
+
+/* Estilos para mensajes de carga y error */
+
+p {
+  margin-top: 20px;
+}
+
+p.loading {
+  color: #007bff;
+}
+
+p.error {
+  color: #dc3545;
+}
