@@ -103,32 +103,33 @@ function App() {
       <header className="App-header">
         <h1>Proceso Monitor</h1>
         {isLoading && <p>Loading data...</p>}
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && <p className="error">{error}</p>}
         {isConnected ? (
           <>
             <div className="table-container">
               <h2>Uso de Memoria</h2>
-              <table>
-                <thead>
-                  <tr>
-                    <th>PID</th>
-                    <th>Nombre Proceso</th>
-                    <th>Uso de Memoria (%)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {memoryData.map((memory) => (
-                    <tr key={memory.pid}>
-                      <td>{memory.pid}</td>
-                      <td>{memory.nombre}</td>
-                      <td>{memory.porcentaje}</td>
+              <div className="table-chart-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>PID</th>
+                      <th>Nombre Proceso</th>
+                      <th>Uso de Memoria (%)</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div className="chart-container">
-                <h2>Gráfica de Uso de Memoria</h2>
-                <Pie data={generateMemoryChartData()} />
+                  </thead>
+                  <tbody>
+                    {memoryData.map((memory) => (
+                      <tr key={memory.pid}>
+                        <td>{memory.pid}</td>
+                        <td>{memory.nombre}</td>
+                        <td>{memory.porcentaje}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="chart-container">
+                  <Pie data={generateMemoryChartData()} />
+                </div>
               </div>
             </div>
 

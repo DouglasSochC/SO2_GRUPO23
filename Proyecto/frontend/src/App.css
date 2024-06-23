@@ -5,90 +5,109 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: #9bb4e5;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: rgb(0, 0, 0);
+  color: rgb(0, 0, 0); /* Cambiado a blanco para mejor contraste */
 }
 
 .container {
   display: flex;
+  flex-direction: column; /* Para que los contenedores se apilen en columnas por defecto */
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   flex-wrap: wrap;
+  gap: 20px; /* Añade espacio entre los elementos */
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box; /* Incluye padding y borde en el ancho total */
 }
 
 .table-container {
-  margin: 20px;
+  display: flex;
+  flex-direction: column; /* Para mantener los elementos en columna por defecto */
+  margin: 20px 0;
   padding: 20px;
   border: 1px solid #ccc;
   border-radius: 8px;
-  background-color: #f0f0f0;
+  background-color: #ffffff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: calc(50% - 40px); /* Ajusta el ancho de la tabla */
+  width: 100%;
+  max-width: 1200px; /* Establece un ancho máximo */
+  box-sizing: border-box; /* Asegura que padding y borde estén incluidos en el ancho */
 }
 
-.chart-container {
-  margin: 20px;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background-color: #f0f0f0;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: calc(50% - 40px); /* Ajusta el ancho de la gráfica */
+/* Estilos para la disposición horizontal de la tabla y la gráfica */
+.table-chart-container {
+  display: flex;
+  flex-direction: row; /* Coloca los elementos en fila */
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap; /* Permite que los elementos se envuelvan en pantallas pequeñas */
+  gap: 20px; /* Añade espacio entre la tabla y la gráfica */
 }
 
-/* Estilos para la tabla */
-
-table {
+/* Estilos específicos para la tabla */
+.table-container table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
+  margin-top: 1rem; /* Usa rem en lugar de px para un ajuste relativo */
 }
 
-table th {
+.table-container th {
   background-color: #007bff;
-  color: rgb(0, 0, 0);
-  padding: 10px;
-}
-
-table td,
-table th {
-  border: 1px solid #ccc;
-  padding: 8px;
+  color: #000000; /* Usa blanco para mejor contraste */
+  padding: 1rem; /* Usa rem en lugar de px para un ajuste relativo */
   text-align: left;
 }
 
-/* Estilos para la gráfica */
+.table-container td,
+.table-container th {
+  border: 1px solid #ccc;
+  padding: 0.5rem; /* Usa rem en lugar de px para un ajuste relativo */
+  text-align: left;
+  word-break: break-word; /* Permite el quiebre de palabras largas */
+}
 
+.chart-container {
+  flex: 1;
+  min-width: 280px; /* Establece un ancho mínimo */
+  max-width: 600px; /* Establece un ancho máximo para evitar expansiones excesivas */
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f0f0f0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box; /* Asegura que padding y borde estén incluidos en el ancho */
+}
+
+/* Estilos para la gráfica */
 canvas {
   max-width: 100%;
   height: auto;
-  margin: auto;
   display: block;
-  width: 100%; /* Ajusta el ancho al 100% del contenedor */
+  margin: 0 auto;
 }
 
 /* Estilo para el encabezado */
-
 h1 {
-  margin-bottom: 20px;
+  margin-bottom: 2rem; /* Usa rem en lugar de px para un ajuste relativo */
 }
 
 h2 {
-  margin-bottom: 10px;
+  margin-bottom: 1rem; /* Usa rem en lugar de px para un ajuste relativo */
   font-size: 1.5rem;
   text-transform: uppercase;
 }
 
 /* Estilos para mensajes de carga y error */
-
 p {
-  margin-top: 20px;
+  margin-top: 2rem; /* Usa rem en lugar de px para un ajuste relativo */
 }
 
 p.loading {
@@ -97,4 +116,32 @@ p.loading {
 
 p.error {
   color: #dc3545;
+}
+
+/* Media Queries para mejorar la responsividad */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column; /* Cambia a columna en pantallas pequeñas */
+    align-items: center;
+  }
+
+  .table-chart-container {
+    flex-direction: column; /* Cambia a columna en pantallas pequeñas */
+  }
+
+  .table-container,
+  .chart-container {
+    width: 90%; /* Ajusta el ancho para que ocupe la mayor parte de la pantalla */
+  }
+
+  .App-header {
+    font-size: calc(8px + 2vmin); /* Reduce el tamaño de la fuente en pantallas más pequeñas */
+  }
+}
+
+@media (max-width: 480px) {
+  .table-container th,
+  .table-container td {
+    padding: 0.5rem 0.25rem; /* Ajusta el padding para dispositivos más pequeños */
+  }
 }

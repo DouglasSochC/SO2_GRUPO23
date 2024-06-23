@@ -1,20 +1,8 @@
-
-
-// Patches
-const {inject, errorHandler} = require('express-custom-error');
-inject(); // Patch express in order to use async / await syntax
-
-// Require Dependencies
-
 const express = require('express');
-const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const helmet = require('helmet');
-
-
+const cookieParser = require('cookie-parser');
 const logger = require('./util/logger');
-
-// Load .env Enviroment Variables to process.env
 
 require('mandatoryenv').load([
     'DB_HOST',
@@ -27,45 +15,43 @@ require('mandatoryenv').load([
 
 const { PORT } = process.env;
 
-
-// Instantiate an Express Application
 const app = express();
 
-
-// Configure Express App Instance
-app.use(express.json( { limit: '50mb' } ));
-app.use(express.urlencoded( { extended: true, limit: '10mb' } ));
-
-// Configure custom logger middleware
+// Configurar middleware
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
+app.use(cors()); // Aquí se configura el middleware CORS
+app.use(helmet());
 app.use(logger.dev, logger.combined);
 
-app.use(cookieParser());
-app.use(cors());
-app.use(helmet());
-
-// This middleware adds the json header to every response
+// Middleware para establecer el tipo de contenido JSON en cada respuesta
 app.use('*', (req, res, next) => {
     res.setHeader('Content-Type', 'application/json');
     next();
-})
+});
 
-// Assign Routes
-
+// Rutas
 app.use('/', require('./routes/router.js'));
 
+// Manejar errores
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        status: false,
+        message: 'Internal Server Error'
+    });
+});
 
-// Handle errors
-app.use(errorHandler());
-
-// Handle not valid route
+// Manejar ruta no válida
 app.use('*', (req, res) => {
-    res
-    .status(404)
-    .json( {status: false, message: 'Endpoint Not Found'} );
-})
+    res.status(404).json({
+        status: false,
+        message: 'Endpoint Not Found'
+    });
+});
 
-// Open Server on selected Port
-app.listen(
-    PORT,
-    () => console.info('Server listening on port ', PORT)
-);
+// Iniciar servidor
+app.listen(PORT, () => {
+    console.info('Server listening on port ', PORT);
+});

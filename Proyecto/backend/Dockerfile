@@ -10,4 +10,4 @@ RUN npm install
 # RUN npm ci --only=production
 
 EXPOSE 5000
-CMD [ "node", "server.js" ]
+CMD [ "npm", "start" ]
