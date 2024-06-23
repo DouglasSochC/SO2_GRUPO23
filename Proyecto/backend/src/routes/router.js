@@ -19,7 +19,10 @@ router.get('/hello', async(req, res) => {
 });
 
 
-// Endpoint para obtener los últimos 10 registros de la tabla procesos
+// Endpoint para obtener los últimos 50 registros de la tabla procesos
 router.get('/procesos', procesoController.obtenerUltimosProcesos);
+
+// Endpoint para obtener el top 10 procesos con más memoria utilizada
+router.get('/memory', procesoController.obtenerTopMemoriaProcesos);
 
 module.exports = router;
