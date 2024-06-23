@@ -64,12 +64,27 @@ function App() {
     }
   }, [isConnected, fetchData]);
 
+  const getUniqueProcesses = (data) => {
+    const uniqueProcesses = new Map();
+    data.forEach((process) => {
+      if (!uniqueProcesses.has(process.pid)) {
+        uniqueProcesses.set(process.pid, process);
+      }
+    });
+    return Array.from(uniqueProcesses.values());
+  };
+
+  const getColorForProcess = (pid) => {
+    const colorSeed = parseInt(pid, 10); // Convertir PID a número entero
+    const hue = (colorSeed * 137) % 360; // Fórmula para generar un hue único basado en el PID
+    return `hsl(${hue}, 70%, 50%)`; // Generar color en formato HSL
+  };
+
   const generateMemoryChartData = () => {
-    const labels = memoryData.map((memory) => memory.nombre);
-    const memoryValues = memoryData.map((memory) => parseFloat(memory.porcentaje));
-    const backgroundColors = memoryData.map(
-      () => `#${Math.floor(Math.random() * 16777215).toString(16)}` // Generar colores aleatorios
-    );
+    const uniqueProcesses = getUniqueProcesses(memoryData); // Asume que getUniqueProcesses está definido y devuelve procesos únicos
+    const labels = uniqueProcesses.map((process) => process.nombre);
+    const memoryValues = uniqueProcesses.map((process) => parseFloat(process.porcentaje));
+    const backgroundColors = uniqueProcesses.map((process) => getColorForProcess(process.pid));
 
     return {
       labels,
